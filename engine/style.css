@@ -1,0 +1,267 @@
+body,
+html {
+  font-family: "Courier New", monospace;
+  margin: 0;
+  padding: 0;
+}
+
+* {
+  font-family: sans-serif;
+}
+
+.fullscreen {
+  width: 100vw;
+  height: 100vh;
+  overflow: hidden;
+}
+
+.fullscreen > * {
+  width: 100%;
+  height: 100%;
+}
+
+.overlay {
+  position: fixed;
+  left: 0;
+  top: 0;
+}
+
+.no-touch {
+  touch-action: none;
+}
+
+.pixelated {
+  image-rendering: pixelated;
+}
+
+.loader-container {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.loader {
+  width: 100px;
+  height: 100px;
+
+  border: 15px solid transparent;
+  border-radius: 50%;
+  border-top-color: #999;
+  border-bottom-color: #999;
+
+  animation: spin 2s ease-in-out infinite;
+}
+
+@keyframes spin {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(1800deg);
+  }
+}
+
+/* ADDED BY DIMITAR */
+.text-on-screen {
+  pointer-events: none;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  position: fixed;
+  opacity: 0.6;
+  z-index: 100;
+}
+#pickup-text {
+  display: none;
+  top: 50%;
+  left: 45%;
+  color: white;
+}
+#search-subject {
+  font-weight: 700;
+  font-size: 30px;
+  display: block;
+  top: 90%;
+  left: 75%;
+  color: white;
+}
+#image-subject {
+  opacity: 0.9;
+  position: fixed;
+  z-index: 100;
+  display: block;
+  width: 60px;
+  height: 60px;
+  top: 88%;
+  left: 90%;
+}
+#wrong-item {
+  font-weight: 700;
+  font-size: 20px;
+  display: none;
+  top: 80%;
+  left: 45%;
+  color: red;
+}
+#correct-item {
+  font-weight: 700;
+  font-size: 20px;
+  display: none;
+  top: 80%;
+  left: 40%;
+  color: green;
+}
+
+#game-intro {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 80vw;
+  height: 80vh;
+  background-color: rgba(155, 29, 32, 0.9);
+  position: fixed;
+  z-index: 100;
+  font-weight: 700;
+  display: block;
+  top: 6vh;
+  left: 10vw;
+  color: wheat;
+  border-radius: 20px;
+  border: 5px solid black;
+  padding: 20px;
+}
+#game-intro-h1{
+  position: relative;
+  left: 33%;
+  font-size: 40px;
+}
+#game-intro-p{
+  position: relative;
+  left: 22%;
+  top: 30%;
+  font-size: 20px;
+}
+#start-button {
+  position: relative;
+  left: 40%;
+  top: 62%;
+  padding: 15px;
+  border-radius: 10px;
+  font-size: 25px;
+  background-color: rgba(155, 29, 32, 0.9);
+}
+#game-over {
+  /* display: flex;
+  justify-content: center;
+  align-items: center; */
+  width: 80vw;
+  height: 80vh;
+  background-color: rgba(0, 107, 166, 0.9);
+  position: fixed;
+  z-index: 100;
+  font-weight: 700;
+  font-size: 50px;
+  display: none;
+  top: 10vh;
+  left: 10vw;
+  color: rgb(32, 0, 128);
+  border-radius: 20px;
+  border: 5px solid black;
+}
+#game-over-h1{
+  position: relative;
+  left: 41%;
+  font-size: 40px;
+}
+#game-over-p{
+  position: relative;
+  left: 42%;
+  top: 30%;
+  font-size: 20px;
+}
+#refresh-button1 {
+  position: relative;
+  left: 40%;
+  top: 60%;
+  padding: 15px;
+  border-radius: 10px;
+  font-size: 25px;
+  background-color: rgba(155, 29, 32, 0.9);
+}
+#refresh-button2 {
+  position: relative;
+  left: 40%;
+  top: 60%;
+  padding: 15px;
+  border-radius: 10px;
+  font-size: 25px;
+  background-color: rgba(155, 29, 32, 0.9);
+}
+
+#game-win {
+  /* display: flex;
+  justify-content: center;
+  align-items: center; */
+  width: 80vw;
+  height: 80vh;
+  background-color: rgba(0, 107, 166, 0.9);
+  position: fixed;
+  z-index: 100;
+  font-weight: 700;
+  font-size: 50px;
+  display: none;
+  top: 10vh;
+  left: 10vw;
+  color: rgb(32, 0, 128);
+  border-radius: 20px;
+  border: 5px solid black;
+}
+#game-win-h1{
+  position: relative;
+  left: 41%;
+  font-size: 40px;
+}
+#game-win-p{
+  position: relative;
+  left: 42%;
+  top: 30%;
+  font-size: 20px;
+}
+
+
+/* FOR THE TIMER */
+#circle-timer-container {
+  position: absolute;
+  top: 3vh; /* Position at the top of the screen */
+  left: 90vw;
+  width: 130px; /* Increase the width */
+  height: 130px; /* Increase the height */
+}
+
+svg {
+  transform: rotate(-90deg); /* Rotate to make the countdown start at the top */
+  width: 100%;
+  height: 100%;
+}
+
+#timer-circle {
+  fill: none;
+  stroke: black; /* Circle color */
+  stroke-width: 7; /* Increase stroke width for larger circle */
+  stroke-dasharray: 377; /* Updated circumference based on larger radius */
+  stroke-dashoffset: 0;
+  transition: stroke-dashoffset 0.1s linear;
+}
+
+
+#timer {
+  pointer-events: none;
+  position: fixed;
+  z-index: 99;
+  font-size: 40px;
+  font-weight: 700;
+  top: 9vh;
+  left: 91vw;
+  color: black;
+  border-radius: 60px;
+}
