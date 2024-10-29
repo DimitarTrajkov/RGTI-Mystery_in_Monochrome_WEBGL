@@ -77,6 +77,12 @@ html {
   left: 45%;
   color: white;
 }
+#lift-text {
+  display: none;
+  top: 50%;
+  left: 45%;
+  color: white;
+}
 #search-subject {
   font-weight: 700;
   font-size: 30px;

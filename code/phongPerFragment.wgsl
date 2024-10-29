@@ -165,7 +165,7 @@ fn fragment(input: FragmentInput) -> FragmentOutput {
     let specularLight = phong * attenuation * light.color;
 
     // Ambient light component with the same color as the main light source
-    let ambientIntensity = 0.1; // Adjust ambient intensity as needed
+    let ambientIntensity = 0.3; // Adjust ambient intensity as needed
     let ambientLight = light.color * ambientIntensity;
 
     // Base color and final color calculation

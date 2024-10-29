@@ -3,9 +3,18 @@ import { getGlobalModelMatrix } from "engine/core/SceneUtils.js";
 import { Transform } from "engine/core.js";
 
 export class Physics {
-  constructor(scene, items_to_pick_up, colorArray, lightComponent) {
+  constructor(
+    scene,
+    items_to_pick_up,
+    colorArray,
+    lightComponent,
+    animation_up,
+    animation_down
+  ) {
     this.scene = scene;
     this.shouldHideOnCollision = false;
+    this.liftkeyUp = false;
+    this.liftkeyDown = false;
     this.items_to_pick_up = items_to_pick_up;
     this.picked_up_items_counter = 0;
     this.colorArray = colorArray;
@@ -13,7 +22,10 @@ export class Physics {
     this.lightComponent = lightComponent;
     this.timeLeft = 30;
     this.completed_the_game = false;
-
+    this.floor_number = 0;
+    this.animate_lift_doors = false;
+    this.animation_up = animation_up;
+    this.animation_down = animation_down;
     // Load audio elements without autoplay
     this.backgroundMusic = document.getElementById("background-music");
     this.correctMusic = document.getElementById("correct-music");
@@ -46,6 +58,10 @@ export class Physics {
     document.addEventListener("keydown", (event) => {
       if (event.key === "p" || event.key === "P") {
         this.shouldHideOnCollision = true;
+      } else if (event.key === "ArrowUp") {
+        this.liftkeyUp = true;
+      } else if (event.key === "ArrowDown") {
+        this.liftkeyDown = true;
       }
     });
   }
@@ -128,12 +144,15 @@ export class Physics {
             this.resolveCollision(node, other);
             // check for pick up
             this.isItemInCenterAndNear(node, other);
+            this.checkLift(node);
           }
         });
       }
     });
     // Reset the flag after each update
     this.shouldHideOnCollision = false;
+    this.liftkeyUp = false;
+    this.liftkeyDown = false;
   }
 
   intervalIntersection(min1, max1, min2, max2) {
@@ -323,6 +342,31 @@ export class Physics {
       document.getElementById("pickup-text").style.display = "block";
       setTimeout(() => {
         document.getElementById("pickup-text").style.display = "none";
+      }, 500);
+    }
+  }
+  checkLift(node) {
+    const transform = node.getComponentOfType(Transform);
+    if (
+      transform.translation[2] < 5 ||
+      transform.translation[2] > 9 ||
+      transform.translation[0] < -1.3 ||
+      transform.translation[0] > 1.4
+    )
+      return;
+    // location of the camera must be in the lift
+    // 1 is the highest floor
+    if (this.liftkeyUp && this.floor_number <1) {
+      // get the animation
+      this.floor_number ++;
+      this.animation_up.play();
+    } else if (this.liftkeyDown && this.floor_number > 0) {
+      this.floor_number --;
+      this.animation_down.play();
+    } else {
+      document.getElementById("lift-text").style.display = "block";
+      setTimeout(() => {
+        document.getElementById("lift-text").style.display = "none";
       }, 500);
     }
   }
