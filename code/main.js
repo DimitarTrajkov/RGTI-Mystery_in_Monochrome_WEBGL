@@ -20,6 +20,7 @@ await renderer.initialize();
 
 const loader = new GLTFLoader();
 await loader.load("scene/untitled4.gltf");
+// await loader.load("scene/try/scene01.glt");
 
 const scene = loader.loadScene(loader.defaultScene);
 const camera = loader.loadNode("Camera");
@@ -39,6 +40,8 @@ const colorArray = [
   [255, 0, 255],
   [255, 255, 0],
 ];
+// TODO: fix it such that the lift goes down as well as the room
+// const pickable_items = ["Box.002", "Box.004", "Box.005", "Suzanne","Cone", "Box.003","Floor","Camera"];
 const pickable_items = ["Box.002", "Box.004", "Box.005", "Suzanne","Cone", "Box.003"];
 const nodes = [];
 const liftDoor = [];

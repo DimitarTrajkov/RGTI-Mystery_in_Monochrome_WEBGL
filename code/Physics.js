@@ -31,6 +31,8 @@ export class Physics {
     this.correctMusic = document.getElementById("correct-music");
     this.wrongMusic = document.getElementById("wrong-music");
     this.tickingMusic = document.getElementById("ticking-music");
+    this.lift_text_blocked = false;
+
     // so when you reset it the music stops before you press start again
     this.backgroundMusic.pause();
     this.correctMusic.pause();
@@ -127,7 +129,7 @@ export class Physics {
       this.gameOverElement.style.display = "block";
     }
     this.circleTimer.style.disply = "none";
-    document.getElementById("search-subject").style.display = "none";
+    document.getElementById("/-subject").style.display = "none";
     document.getElementById("image-subject").style.display = "none";
     this.timerElement.style.color = "black";
     this.tickingMusic.muted = true;
@@ -137,16 +139,18 @@ export class Physics {
   update(t, dt) {
     this.scene.traverse((node) => {
       // console.log(node.id, node.aabb);
+      // if camera
       if (node.isDynamic) {
         this.scene.traverse((other) => {
+          // if camera != camera and colision detection
           if (node !== other && other.isStatic) {
             // check for colisions
             this.resolveCollision(node, other);
             // check for pick up
             this.isItemInCenterAndNear(node, other);
-            this.checkLift(node);
           }
         });
+        this.checkLift(node);
       }
     });
     // Reset the flag after each update
@@ -255,9 +259,7 @@ export class Physics {
   updateLightColor() {
     this.colorIndex = (this.colorIndex + 1) % this.colorArray.length;
     this.lightComponent.color = this.colorArray[this.colorIndex];
-    console.log(this.lightComponent);
   }
-
   // finding if subjects are near each other
   isItemInCenterAndNear(
     cameraNode,
@@ -323,9 +325,10 @@ export class Physics {
           document.getElementById("correct-item").style.display = "none";
           this.timerElement.style.color = "black";
           this.circleTimer.style.stroke = "black";
+          this.correctMusic.pause();
         }, 500);
       } else {
-        console.log(itemNode.id);
+        // console.log(itemNode.id);
         // logic for wrong pick
         this.timeLeft -= 1;
         this.timerElement.style.color = "red";
@@ -336,6 +339,7 @@ export class Physics {
           document.getElementById("wrong-item").style.display = "none";
           this.timerElement.style.color = "black";
           this.circleTimer.style.stroke = "black";
+          this.wrongMusic.pause();
         }, 500);
       }
     } else {
@@ -364,9 +368,13 @@ export class Physics {
       this.floor_number --;
       this.animation_down.play();
     } else {
+      if (this.lift_text_blocked)
+        return;
       document.getElementById("lift-text").style.display = "block";
+      this.lift_text_blocked = true;
       setTimeout(() => {
         document.getElementById("lift-text").style.display = "none";
+        this.lift_text_blocked = false;
       }, 500);
     }
   }
