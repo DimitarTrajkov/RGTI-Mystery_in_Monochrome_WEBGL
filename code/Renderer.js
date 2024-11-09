@@ -94,10 +94,6 @@ const missingTextureBitmap = await fetch('./scene/missing-texture.png')
         .then(response => response.blob())
         .then(blob => createImageBitmap(blob));
 
-const noTextureBitmap = await fetch('./scene/no-texture1.png')
-        .then(response => response.blob())
-        .then(blob => createImageBitmap(blob));
-
 export class Renderer extends BaseRenderer {
 
     constructor(canvas) {
