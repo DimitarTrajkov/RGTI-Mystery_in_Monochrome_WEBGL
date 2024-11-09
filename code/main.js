@@ -35,6 +35,7 @@ camera.aabb = {
 
 // Define color array for light and initialize color index
 const colorArray = [
+  [255,255,255],
   [0, 0, 255],
   [0, 255, 0],
   [0, 255, 255],

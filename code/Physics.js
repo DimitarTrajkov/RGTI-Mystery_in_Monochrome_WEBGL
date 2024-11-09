@@ -299,7 +299,7 @@ export class Physics {
     }
     // console.log(this.shouldHideOnCollision);
     if (this.shouldHideOnCollision) {
-      if (itemNode.id == this.items_to_pick_up[this.picked_up_items_counter]) {
+      if (itemNode.id == this.items_to_pick_up[this.picked_up_items_counter]) { // <------------- CHANGE TO ANY ITEM NO ORDER
         // next item
         this.picked_up_items_counter++;
         itemNode.draw = false;

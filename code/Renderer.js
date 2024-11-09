@@ -94,6 +94,10 @@ const missingTextureBitmap = await fetch('./scene/missing-texture.png')
         .then(response => response.blob())
         .then(blob => createImageBitmap(blob));
 
+const noTextureBitmap = await fetch('./scene/no-texture1.png')
+        .then(response => response.blob())
+        .then(blob => createImageBitmap(blob));
+
 export class Renderer extends BaseRenderer {
 
     constructor(canvas) {
@@ -240,17 +244,22 @@ export class Renderer extends BaseRenderer {
         if (this.gpuObjects.has(texture)) {
             return this.gpuObjects.get(texture);
         }
-        // console.log(texture.image);
-        // console.log(texture.isSRGB);
-        // console.log(texture.sampler);
         const { gpuTexture } = this.prepareImage(texture.image, texture.isSRGB);
         const { gpuSampler } = this.prepareSampler(texture.sampler);
-        // console.log(gpuTexture);
-        // console.log(gpuSampler);
         const gpuObjects = { gpuTexture, gpuSampler };
         this.gpuObjects.set(texture, gpuObjects);
-        // console.log(gpuObjects);
         return gpuObjects;
+    }
+
+    createMonocolorBitmap(color) {
+        // Make an HTML canvas with a single pixel of the desired color
+        const canvas = document.createElement('canvas');
+        canvas.width = 1;
+        canvas.height = 1;
+        const context = canvas.getContext('2d');
+        context.fillStyle = `rgb(${color.map(c => Math.round(c * 255)).join(',')})`;
+        context.fillRect(0, 0, 1, 1);
+        return canvas;
     }
 
     prepareMaterial(material) {
@@ -258,8 +267,15 @@ export class Renderer extends BaseRenderer {
             return this.gpuObjects.get(material);
         }
 
-        if (!material.baseTexture) {
+        if (!material.baseTexture && !material.baseFactor) {
+            // If material has no texture and no color, use missing texture
+            console.log('Missing texture for material', material);
             material.baseTexture = { image: missingTextureBitmap, sampler: {} };
+
+        } else if (!material.baseTexture && material.baseFactor) {
+            // If material has no texture but has color, create a monochromatic texture
+            let colorCanvas = this.createMonocolorBitmap(material.baseFactor);
+            material.baseTexture = { image: colorCanvas, sampler: {} };
         }
 
         let baseTexture = this.prepareTexture(material.baseTexture);
