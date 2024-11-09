@@ -89,6 +89,11 @@ const materialBindGroupLayout = {
     ],
 };
 
+// Create bitmap for missing texture
+const missingTextureBitmap = await fetch('./scene/missing-texture.png')
+        .then(response => response.blob())
+        .then(blob => createImageBitmap(blob));
+
 export class Renderer extends BaseRenderer {
 
     constructor(canvas) {
@@ -235,16 +240,16 @@ export class Renderer extends BaseRenderer {
         if (this.gpuObjects.has(texture)) {
             return this.gpuObjects.get(texture);
         }
-        console.log(texture.image);
-        console.log(texture.isSRGB);
-        console.log(texture.sampler);
+        // console.log(texture.image);
+        // console.log(texture.isSRGB);
+        // console.log(texture.sampler);
         const { gpuTexture } = this.prepareImage(texture.image, texture.isSRGB);
         const { gpuSampler } = this.prepareSampler(texture.sampler);
-        console.log(gpuTexture);
-        console.log(gpuSampler);
+        // console.log(gpuTexture);
+        // console.log(gpuSampler);
         const gpuObjects = { gpuTexture, gpuSampler };
         this.gpuObjects.set(texture, gpuObjects);
-        console.log(gpuObjects);
+        // console.log(gpuObjects);
         return gpuObjects;
     }
 
@@ -253,7 +258,11 @@ export class Renderer extends BaseRenderer {
             return this.gpuObjects.get(material);
         }
 
-        const baseTexture = this.prepareTexture(material.baseTexture);
+        if (!material.baseColorTexture) {
+            material.baseColorTexture = { image: missingTextureBitmap, sampler: {} };
+        }
+
+        let baseTexture = this.prepareTexture(material.baseColorTexture);
 
         const materialUniformBuffer = this.device.createBuffer({
             size: 32,
