@@ -258,11 +258,11 @@ export class Renderer extends BaseRenderer {
             return this.gpuObjects.get(material);
         }
 
-        if (!material.baseColorTexture) {
-            material.baseColorTexture = { image: missingTextureBitmap, sampler: {} };
+        if (!material.baseTexture) {
+            material.baseTexture = { image: missingTextureBitmap, sampler: {} };
         }
 
-        let baseTexture = this.prepareTexture(material.baseColorTexture);
+        let baseTexture = this.prepareTexture(material.baseTexture);
 
         const materialUniformBuffer = this.device.createBuffer({
             size: 32,
@@ -284,6 +284,7 @@ export class Renderer extends BaseRenderer {
     }
 
     render(scene, camera) {
+
         if (this.depthTexture.width !== this.canvas.width || this.depthTexture.height !== this.canvas.height) {
             this.recreateDepthTexture();
         }
@@ -382,6 +383,7 @@ export class Renderer extends BaseRenderer {
 
     renderPrimitive(primitive) {
         const material = primitive.material;
+
         const { materialUniformBuffer, materialBindGroup } = this.prepareMaterial(material);
         this.device.queue.writeBuffer(materialUniformBuffer, 0, new Float32Array([
             ...material.baseFactor,
