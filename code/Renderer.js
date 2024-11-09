@@ -235,12 +235,16 @@ export class Renderer extends BaseRenderer {
         if (this.gpuObjects.has(texture)) {
             return this.gpuObjects.get(texture);
         }
-
+        console.log(texture.image);
+        console.log(texture.isSRGB);
+        console.log(texture.sampler);
         const { gpuTexture } = this.prepareImage(texture.image, texture.isSRGB);
         const { gpuSampler } = this.prepareSampler(texture.sampler);
-
+        console.log(gpuTexture);
+        console.log(gpuSampler);
         const gpuObjects = { gpuTexture, gpuSampler };
         this.gpuObjects.set(texture, gpuObjects);
+        console.log(gpuObjects);
         return gpuObjects;
     }
 

@@ -196,12 +196,13 @@ export class GLTFLoader {
         if (this.cache.has(gltfSpec)) {
             return this.cache.get(gltfSpec);
         }
-
+        
         const options = {};
         const pbr = gltfSpec.pbrMetallicRoughness;
         if (pbr) {
             if (pbr.baseColorTexture) {
                 options.baseTexture = this.loadTexture(pbr.baseColorTexture.index);
+                // console.log(options.baseTexture);
                 options.baseTexture.isSRGB = true;
             }
             if (pbr.metallicRoughnessTexture) {
@@ -228,8 +229,9 @@ export class GLTFLoader {
             options.occlusionTexture = this.loadTexture(gltfSpec.occlusionTexture.index);
             options.occlusionFactor = gltfSpec.occlusionTexture.strength;
         }
-
+        
         const material = new Material(options);
+        // console.log("matrijal",material);
 
         this.cache.set(gltfSpec, material);
         return material;
@@ -243,7 +245,7 @@ export class GLTFLoader {
         if (this.cache.has(gltfSpec)) {
             return this.cache.get(gltfSpec);
         }
-
+        
         if (gltfSpec.bufferView === undefined) {
             console.warn('Accessor does not reference a buffer view');
             return null;

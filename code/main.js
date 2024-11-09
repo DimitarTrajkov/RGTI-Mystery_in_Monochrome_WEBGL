@@ -19,10 +19,11 @@ const renderer = new Renderer(canvas);
 await renderer.initialize();
 
 const loader = new GLTFLoader();
-await loader.load("scene/untitled4.gltf");
-// await loader.load("scene/try/scene01.glt");
+// await loader.load("scene/untitled4.gltf");
+await loader.load("scene/try1/scene06.gltf");
 
 const scene = loader.loadScene(loader.defaultScene);
+// console.log(scene);
 const camera = loader.loadNode("Camera");
 camera.addComponent(new FirstPersonController(camera, canvas));
 camera.isDynamic = true;
@@ -30,6 +31,7 @@ camera.aabb = {
   min: [-0.2, -0.8, -0.4],
   max: [0.2, 0.8, 0.4],
 };
+// console.log(camera);
 
 // Define color array for light and initialize color index
 const colorArray = [
@@ -42,13 +44,13 @@ const colorArray = [
 ];
 // TODO: fix it such that the lift goes down as well as the room
 // const pickable_items = ["Box.002", "Box.004", "Box.005", "Suzanne","Cone", "Box.003","Floor","Camera"];
-const pickable_items = ["Box.002", "Box.004", "Box.005", "Suzanne","Cone", "Box.003"];
+const pickable_items = ["Chair.002","Chair.003", "Chair.004"];
 const nodes = [];
 const liftDoor = [];
 for (let i of pickable_items) {
-  nodes.push(loader.loadNode(i));
+  // nodes.push(loader.loadNode(i));
 }
-liftDoor.push(loader.loadNode("Cube.002"));
+// liftDoor.push(loader.loadNode("Cube.002"));
 const close_up_door_up = new LinearAnimator(liftDoor, {
   dx: 3.3,  
   dy: 0,
@@ -113,7 +115,7 @@ scene.addComponent({
     }
   },
 });
-const items_to_pick_up = ["Box.003", "Box.004", "Box.005", "Suzanne"];
+const items_to_pick_up = ["Chair.002","Chair.003", "Chair.004"];
 document.getElementById("image-subject").src = `${items_to_pick_up[0]}.jpeg`;
 let colorIndex = 0;
 
@@ -134,21 +136,12 @@ scene.addChild(light);
 
 // Load other static nodes and set `draw` property
 [
-  "Box.000",
-  "Box.001",
-  "Box.002",
-  "Box.003",
-  "Box.004",
-  "Box.005",
-  "Wall.000",
-  "Wall.001",
-  "Wall.002",
-  "Wall.003",
-  "Cone",
-  "Suzanne",
-  "Cube",
-  "Cube.001",
-  "Cube.002",
+  "Chair.002","Chair.003", "Chair.004","Ceiling.Panels", "Plane.003", "Wall.Bar.Back.Overhang", "Wall.Bar.Back.Unfurnished", "Wall.Bar.Back.Unfurnished.001", "Wall.Bar.Back.Unfurnished.002",
+  "Wall.Door.Overhang", "Bar_Stool.003",
+   "Wall.Internal.001", "Wall.Internal.002", "Wall.Internal.003", "Wall.Internal.004", "Wall.Internal.005",
+   "Wall.Internal.006", "Wall.Internal.007", "Wall.Internal.008", "Wall.Internal.009", "Wall.Internal.010",
+   "Wall.Internal.011", "Wall.Internal.012", "Wall.Internal.013", "Wall.Internal.014", "Wall.Internal.015",
+   "Wall.Internal.016", "Wall.Internal.017"
 ].forEach((nodeName) => {
   const node = loader.loadNode(nodeName);
   node.isStatic = true;
@@ -159,15 +152,12 @@ scene.addChild(light);
 
 // boudaries of the space are not pickable
 [
-  "Box.000",
-  "Box.001",
-  "Wall.000",
-  "Wall.001",
-  "Wall.002",
-  "Wall.003",
-  "Cube",
-  "Cube.001",
-  "Cube.002",
+  "Plane.003", "Wall.Bar.Back.Overhang", "Wall.Bar.Back.Unfurnished", "Wall.Bar.Back.Unfurnished.001", "Wall.Bar.Back.Unfurnished.002",
+  "Wall.Door.Overhang", "Bar_Stool.003",
+   "Wall.Internal.001", "Wall.Internal.002", "Wall.Internal.003", "Wall.Internal.004", "Wall.Internal.005",
+   "Wall.Internal.006", "Wall.Internal.007", "Wall.Internal.008", "Wall.Internal.009", "Wall.Internal.010",
+   "Wall.Internal.011", "Wall.Internal.012", "Wall.Internal.013", "Wall.Internal.014", "Wall.Internal.015",
+   "Wall.Internal.016", "Wall.Internal.017"
 ].forEach((nodeName) => {
   const node = loader.loadNode(nodeName);
   node.pickable = false;
@@ -184,18 +174,28 @@ const physics = new Physics(
 scene.traverse((node) => {
   const model = node.getComponentOfType(Model);
   if (!model) return;
-
+  // console.log(model);
   model.primitives.forEach((primitive) => {
     const material = primitive.material;
     material.diffuse = 20;
     material.specular = 1;
     material.shininess = 200;
   });
-
+  // console.log("difuse specular and shininess added");
   const boxes = model.primitives.map((primitive) =>
     calculateAxisAlignedBoundingBox(primitive.mesh)
   );
-  node.aabb = mergeAxisAlignedBoundingBoxes(boxes);
+  // console.log("boxes",boxes);
+  // console.log("node",node);
+  // node.aabb  = 5; // testing  
+  // console.log("node",node);
+  // ORIGINAL
+  // node.aabb = mergeAxisAlignedBoundingBoxes(boxes);
+  // console.log(node);
+  // console.log("x",mergeAxisAlignedBoundingBoxes(boxes));
+  var  x = mergeAxisAlignedBoundingBoxes(boxes);
+  node.aabb = x;
+  // console.log("blabla2");
 });
 function update(time, dt) {
   scene.traverse((node) => {
