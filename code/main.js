@@ -116,9 +116,26 @@ scene.addComponent({
     }
   },
 });
+
+// Hotbar
 const items_to_pick_up = ["Chair.002","Chair.003", "Chair.004"];
-document.getElementById("image-subject").src = `${items_to_pick_up[0]}.jpeg`;
+// document.getElementById("image-subject").src = `${items_to_pick_up[0]}.jpeg`;
 let colorIndex = 0;
+var hotbar = document.querySelector(".hotbar");
+function createHotbar(items) {
+  items.forEach((item) => {
+    const img = document.createElement("img");
+    img.src = `${item}.jpeg`;
+    img.alt = item;
+
+    const img_container = document.createElement("div");
+    img_container.classList.add("hotbar-item");
+    img_container.appendChild(img);
+
+    hotbar.appendChild(img_container);
+  });
+}
+createHotbar(items_to_pick_up);
 
 const light = new Node();
 const LightTranslationComponent = new Transform({

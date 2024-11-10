@@ -286,10 +286,6 @@ export class Physics {
       this.showGameOver();
       return;
     }
-    document.getElementById("image-subject").src = `${
-      this.items_to_pick_up[this.picked_up_items_counter]
-    }.jpeg`;
-
     this.updateLightColor();
 
     // logic for correct pick
@@ -308,18 +304,16 @@ export class Physics {
 
   checkIfCorrectItemPickedUp(itemNode) {
     // Check if the item picked up is any of the items needed to be picked up
-    let foundCorrectItem = false;
     for (let i = 0; i < this.items_to_pick_up.length; i++) {
       if (itemNode.id == this.items_to_pick_up[i]) {
+        document.querySelectorAll(".hotbar-item")[i].classList.add("grayscale");
+
         this.correctItemPickedUp(itemNode);
-        foundCorrectItem = true;
-        break;
+        return;
       }
     }
 
-    if (!foundCorrectItem) {
-      this.wrongItemPickedUp();
-    }
+    this.wrongItemPickedUp();
   }
 
   // finding if subjects are near each other
