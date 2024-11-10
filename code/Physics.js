@@ -20,7 +20,7 @@ export class Physics {
     this.colorArray = colorArray;
     this.colorIndex = 0;
     this.lightComponent = lightComponent;
-    this.timeLeft = 30;
+    this.timeLeft = 1000;
     this.completed_the_game = false;
     this.floor_number = 0;
     this.animate_lift_doors = false;
@@ -260,12 +260,74 @@ export class Physics {
     this.colorIndex = (this.colorIndex + 1) % this.colorArray.length;
     this.lightComponent.color = this.colorArray[this.colorIndex];
   }
+
+  wrongItemPickedUp() {
+    // console.log(itemNode.id);
+    // logic for wrong pick
+    this.timeLeft -= 1;
+    this.timerElement.style.color = "red";
+    this.circleTimer.style.stroke = "red";
+    this.wrongMusic.play();
+    document.getElementById("wrong-item").style.display = "block";
+    setTimeout(() => {
+      document.getElementById("wrong-item").style.display = "none";
+      this.timerElement.style.color = "black";
+      this.circleTimer.style.stroke = "black";
+      this.wrongMusic.pause();
+    }, 500);
+  }
+
+  correctItemPickedUp(itemNode) {
+    this.picked_up_items_counter++;
+    itemNode.draw = false;
+    itemNode.isStatic = false;
+    if (this.picked_up_items_counter == this.items_to_pick_up.length) {
+      this.completed_the_game = true;
+      this.showGameOver();
+      return;
+    }
+    document.getElementById("image-subject").src = `${
+      this.items_to_pick_up[this.picked_up_items_counter]
+    }.jpeg`;
+
+    this.updateLightColor();
+
+    // logic for correct pick
+    this.timeLeft += 3;
+    this.timerElement.style.color = "green";
+    this.circleTimer.style.stroke = "green";
+    this.correctMusic.play();
+    document.getElementById("correct-item").style.display = "block";
+    setTimeout(() => {
+      document.getElementById("correct-item").style.display = "none";
+      this.timerElement.style.color = "black";
+      this.circleTimer.style.stroke = "black";
+      this.correctMusic.pause();
+    }, 500);
+  }
+
+  checkIfCorrectItemPickedUp(itemNode) {
+    // Check if the item picked up is any of the items needed to be picked up
+    let foundCorrectItem = false;
+    for (let i = 0; i < this.items_to_pick_up.length; i++) {
+      if (itemNode.id == this.items_to_pick_up[i]) {
+        this.correctItemPickedUp(itemNode);
+        foundCorrectItem = true;
+        break;
+      }
+    }
+
+    if (!foundCorrectItem) {
+      this.wrongItemPickedUp();
+    }
+  }
+
   // finding if subjects are near each other
   isItemInCenterAndNear(
     cameraNode,
     itemNode,
-    thresholdDistance = 3,
-    thresholdAngle = 25
+    thresholdDistance = 15,
+    thresholdAngle = 5,
   ) {
     if (!itemNode.pickable) {
       return;
@@ -299,49 +361,7 @@ export class Physics {
     }
     // console.log(this.shouldHideOnCollision);
     if (this.shouldHideOnCollision) {
-      if (itemNode.id == this.items_to_pick_up[this.picked_up_items_counter]) { // <------------- CHANGE TO ANY ITEM NO ORDER
-        // next item
-        this.picked_up_items_counter++;
-        itemNode.draw = false;
-        itemNode.isStatic = false;
-        if (this.picked_up_items_counter == this.items_to_pick_up.length) {
-          this.completed_the_game = true;
-          this.showGameOver();
-          return;
-        }
-        document.getElementById("image-subject").src = `${
-          this.items_to_pick_up[this.picked_up_items_counter]
-        }.jpeg`;
-
-        this.updateLightColor();
-
-        // logic for correct pick
-        this.timeLeft += 3;
-        this.timerElement.style.color = "green";
-        this.circleTimer.style.stroke = "green";
-        this.correctMusic.play();
-        document.getElementById("correct-item").style.display = "block";
-        setTimeout(() => {
-          document.getElementById("correct-item").style.display = "none";
-          this.timerElement.style.color = "black";
-          this.circleTimer.style.stroke = "black";
-          this.correctMusic.pause();
-        }, 500);
-      } else {
-        // console.log(itemNode.id);
-        // logic for wrong pick
-        this.timeLeft -= 1;
-        this.timerElement.style.color = "red";
-        this.circleTimer.style.stroke = "red";
-        this.wrongMusic.play();
-        document.getElementById("wrong-item").style.display = "block";
-        setTimeout(() => {
-          document.getElementById("wrong-item").style.display = "none";
-          this.timerElement.style.color = "black";
-          this.circleTimer.style.stroke = "black";
-          this.wrongMusic.pause();
-        }, 500);
-      }
+      this.checkIfCorrectItemPickedUp(itemNode);
     } else {
       document.getElementById("pickup-text").style.display = "block";
       setTimeout(() => {

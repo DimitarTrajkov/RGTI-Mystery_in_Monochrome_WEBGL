@@ -94,6 +94,18 @@ const missingTextureBitmap = await fetch('./scene/missing-texture.png')
         .then(response => response.blob())
         .then(blob => createImageBitmap(blob));
 
+
+
+// Temporary fix: Teleport
+export function teleport(x, y, z) {
+    Renderer.temp = 1;
+    Renderer.teleportX = x;
+    Renderer.teleportY = y;
+    Renderer.teleportZ = z;
+}
+window.teleport = teleport;
+// End of Teleport
+
 export class Renderer extends BaseRenderer {
 
     constructor(canvas) {
@@ -297,6 +309,16 @@ export class Renderer extends BaseRenderer {
 
     render(scene, camera) {
 
+        if (Renderer.temp !== 0) { // Temporary fix: Teleport
+            let matrix = camera.components[0].translation;
+            matrix[0]+=Renderer.teleportX;
+            matrix[1]+=Renderer.teleportY;
+            matrix[2]+=Renderer.teleportZ;
+
+            camera.components[0].translation = matrix;
+            Renderer.temp = 0;
+        }
+
         if (this.depthTexture.width !== this.canvas.width || this.depthTexture.height !== this.canvas.height) {
             this.recreateDepthTexture();
         }
@@ -413,3 +435,9 @@ export class Renderer extends BaseRenderer {
     }
 
 }
+
+// Temporary fix: Teleport
+Renderer.temp = 0;
+Renderer.teleportX = 0;
+Renderer.teleportY = 0;
+Renderer.teleportZ = 0;

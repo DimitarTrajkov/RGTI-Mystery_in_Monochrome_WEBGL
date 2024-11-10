@@ -61,7 +61,7 @@ html {
   }
 }
 
-/* ADDED BY DIMITAR */
+/* USER CODE ---------------------------------------------------------------------------------- */
 .text-on-screen {
   pointer-events: none;
   display: flex;
