@@ -125,7 +125,7 @@ var hotbar = document.querySelector(".hotbar");
 function createHotbar(items) {
   items.forEach((item) => {
     const img = document.createElement("img");
-    img.src = `${item}.jpeg`;
+    img.src = `pickableItems/${item}.jpeg`;
     img.alt = item;
 
     const img_container = document.createElement("div");
