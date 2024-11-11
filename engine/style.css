@@ -116,46 +116,100 @@ html {
   top: 80%;
   left: 40%;
   color: green;
+}/* Importing the Chakra Petch font */
+@import url('https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@400;500;700&display=swap');
+/* Sheer Background */
+#background {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background: rgba(0, 0, 0, 0.8); /* Less transparent background (more coverage) */
+  z-index: 0; /* Behind the intro screen */
+  animation: colorPulse 6s ease-in-out infinite; /* Pulsing background animation */
 }
 
+/* Main Intro Screen Container */
 #game-intro {
   display: flex;
-  justify-content: center;
-  align-items: center;
+  flex-direction: column; /* Stack content vertically */
+  align-items: center; /* Center horizontally */
+  justify-content: center; /* Center vertically */
   width: 80vw;
   height: 80vh;
-  background-color: rgba(155, 29, 32, 0.9);
+  background-color: #000000; /* Black background */
+  color: #FFFFFF; /* White text */
   position: fixed;
-  z-index: 100;
-  font-weight: 700;
-  display: block;
-  top: 6vh;
-  left: 10vw;
-  color: wheat;
+  z-index: 100; /* Ensure it's on top of the background */
   border-radius: 20px;
   border: 5px solid black;
   padding: 20px;
+  top: 6vh;
+  left: 10vw;
+  box-shadow: 0px 0px 20px rgba(0, 0, 0, 0.5);
+  font-family: 'Chakra Petch', sans-serif; /* Updated to Chakra Petch */
+  text-align: center; /* Ensure all text is centered */
 }
-#game-intro-h1{
-  position: relative;
-  left: 33%;
-  font-size: 40px;
+
+/* Title Styling */
+#game-intro-h1 {
+  font-size: 3rem;
+  color: #FFFFFF;
+  text-shadow: 0 0 10px rgba(255, 255, 255, 0.5), 0 0 20px rgba(255, 255, 255, 0.2);
+  margin-bottom: 10px;
+  animation: textFlicker 2s infinite;
 }
-#game-intro-p{
-  position: relative;
-  left: 22%;
-  top: 30%;
-  font-size: 20px;
+
+/* Subtitle Paragraph Styling */
+#game-intro-p {
+  font-size: 1.2rem;
+  max-width: 80%;
+  color: rgba(255, 255, 255, 0.8);
+  animation: subtleFade 6s ease-in-out infinite;
+  margin-bottom: 20px;
 }
+
+/* Start Button Styling */
 #start-button {
-  position: relative;
-  left: 40%;
-  top: 62%;
-  padding: 15px;
+  padding: 15px 30px;
   border-radius: 10px;
-  font-size: 25px;
-  background-color: rgba(155, 29, 32, 0.9);
+  font-size: 1.5rem;
+  font-weight: bold;
+  background-color: #1b1b1b; /* Light gray background */
+  color: #FFFFFF; /* White text */
+  cursor: pointer;
+  box-shadow: 0 0 15px rgba(130, 130, 130, 0.8), 0 0 30px rgba(103, 103, 103, 0.4);
+  transition: transform 0.2s, box-shadow 0.2s;
+  margin-top: 20px;
 }
+
+#start-button:hover {
+  transform: scale(1.05);
+  box-shadow: 0 0 20px rgba(139, 139, 139, 0.9), 0 0 40px rgba(113, 112, 112, 0.6);
+}
+
+/* Animation Keyframes */
+@keyframes colorPulse {
+  0% { background-color: rgba(0, 0, 0, 0.5); }
+  20% { background-color: rgba(50, 50, 50, 0.5); }
+  40% { background-color: rgba(30, 30, 60, 0.5); }
+  60% { background-color: rgba(60, 60, 30, 0.5); }
+  80% { background-color: rgba(80, 50, 50, 0.5); }
+  100% { background-color: rgba(0, 0, 0, 0.5); }
+}
+
+@keyframes textFlicker {
+  0%, 100% { text-shadow: 0 0 10px rgba(255, 255, 255, 0.5); }
+  50% { text-shadow: 0 0 20px rgba(255, 255, 255, 0.8); }
+}
+
+@keyframes subtleFade {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.8; }
+}
+
+
 #game-over {
   /* display: flex;
   justify-content: center;

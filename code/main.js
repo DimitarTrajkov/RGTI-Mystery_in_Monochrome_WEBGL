@@ -20,7 +20,7 @@ await renderer.initialize();
 
 const loader = new GLTFLoader();
 // await loader.load("scene/untitled4.gltf");
-await loader.load("scene/try1/scene06.gltf");
+await loader.load("scene/try1/scene11.gltf");
 
 const scene = loader.loadScene(loader.defaultScene);
 // console.log(scene);
@@ -118,7 +118,7 @@ scene.addComponent({
 });
 
 // Hotbar
-const items_to_pick_up = ["Chair.002","Chair.003", "Chair.004"];
+const items_to_pick_up = ["Chair.002"];
 // document.getElementById("image-subject").src = `${items_to_pick_up[0]}.jpeg`;
 let colorIndex = 0;
 var hotbar = document.querySelector(".hotbar");
@@ -154,7 +154,7 @@ scene.addChild(light);
 
 // Load other static nodes and set `draw` property
 [
-  "Chair.002","Chair.003", "Chair.004","Ceiling.Panels", "Plane.003", "Wall.Bar.Back.Overhang", "Wall.Bar.Back.Unfurnished", "Wall.Bar.Back.Unfurnished.001", "Wall.Bar.Back.Unfurnished.002",
+  "Chair.002","Chair.003", "Chair.004","Ceiling.Panels", "Plane", "Wall.Bar.Back.Overhang", "Wall.Bar.Back.Unfurnished", "Wall.Bar.Back.Unfurnished.001", "Wall.Bar.Back.Unfurnished.002",
   "Wall.Door.Overhang", "Bar_Stool.003",
    "Wall.Internal.001", "Wall.Internal.002", "Wall.Internal.003", "Wall.Internal.004", "Wall.Internal.005",
    "Wall.Internal.006", "Wall.Internal.007", "Wall.Internal.008", "Wall.Internal.009", "Wall.Internal.010",
@@ -170,7 +170,7 @@ scene.addChild(light);
 
 // boudaries of the space are not pickable
 [
-  "Plane.003", "Wall.Bar.Back.Overhang", "Wall.Bar.Back.Unfurnished", "Wall.Bar.Back.Unfurnished.001", "Wall.Bar.Back.Unfurnished.002",
+  "Plane", "Wall.Bar.Back.Overhang", "Wall.Bar.Back.Unfurnished", "Wall.Bar.Back.Unfurnished.001", "Wall.Bar.Back.Unfurnished.002",
   "Wall.Door.Overhang", "Bar_Stool.003",
    "Wall.Internal.001", "Wall.Internal.002", "Wall.Internal.003", "Wall.Internal.004", "Wall.Internal.005",
    "Wall.Internal.006", "Wall.Internal.007", "Wall.Internal.008", "Wall.Internal.009", "Wall.Internal.010",

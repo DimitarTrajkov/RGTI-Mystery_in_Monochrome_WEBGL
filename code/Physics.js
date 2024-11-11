@@ -20,7 +20,7 @@ export class Physics {
     this.colorArray = colorArray;
     this.colorIndex = 0;
     this.lightComponent = lightComponent;
-    this.timeLeft = 1000;
+    this.timeLeft = 15;
     this.completed_the_game = false;
     this.floor_number = 0;
     this.animate_lift_doors = false;
