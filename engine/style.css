@@ -118,8 +118,10 @@ html {
   color: green;
 }
 
+/* INTRO SCREEN */
 /* Importing the Chakra Petch font */
 @import url('https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@400;500;700&display=swap');
+
 /* Sheer Background */
 #background {
   position: fixed;
@@ -131,20 +133,19 @@ html {
   background-size: cover;
   background-position: center center;
   background-repeat: no-repeat;
-  z-index: -1; /* Ensure it is placed behind all other content */
   opacity: 0.8;
   transition: opacity 0.5s ease-in-out; /* Smooth fade-out */
 }
 
 /* Main Intro Screen Container */
-#game-intro {
+#game-intro-screen {
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
   width: 80vw;
   height: 80vh;
-  background-color: rgba(0, 0, 0, 0.7); /* Semi-transparent dark overlay for text */
+  background-color: rgb(0, 0, 0); /* Semi-transparent dark overlay for text */
   color: #FFFFFF;
   position: fixed;
   z-index: 1; /* Ensure this content is in front of the background */
@@ -153,6 +154,7 @@ html {
   padding: 20px;
   top: 6vh;
   left: 10vw;
+  /* z-index: 0; */
   box-shadow: 0px 0px 20px rgba(0, 0, 0, 0.5);
   font-family: 'Chakra Petch', sans-serif;
   text-align: center;
@@ -161,7 +163,7 @@ html {
 
 /* Title Styling */
 #game-intro-h1 {
-  font-size: 3rem;
+  font-size: 5rem;
   color: #FFFFFF;
   text-shadow: 0 0 10px rgba(255, 255, 255, 0.5), 0 0 20px rgba(255, 255, 255, 0.2);
   margin-bottom: 10px;
@@ -191,6 +193,7 @@ html {
   box-shadow: 0 0 15px rgba(130, 130, 130, 0.8), 0 0 30px rgba(103, 103, 103, 0.4);
   transition: transform 0.2s, box-shadow 0.2s;
   margin-top: 20px;
+  font-family: 'Chakra Petch', sans-serif;
 }
 
 #start-button:hover {
@@ -208,84 +211,207 @@ html {
   0%, 100% { opacity: 1; }
   50% { opacity: 0.8; }
 }
-
+/* Main Game Over Screen Container */
 #game-over {
-  /* display: flex;
+  display: none;
+  flex-direction: column;
+  align-items: center;
   justify-content: center;
-  align-items: center; */
   width: 80vw;
   height: 80vh;
-  background-color: rgba(0, 107, 166, 0.9);
   position: fixed;
   z-index: 100;
-  font-weight: 700;
-  font-size: 50px;
-  display: none;
   top: 10vh;
   left: 10vw;
-  color: rgb(32, 0, 128);
+  font-family: 'Chakra Petch', sans-serif;
+  text-align: center;
+  color: #FFFFFF;
   border-radius: 20px;
-  border: 5px solid black;
-}
-#game-over-h1{
-  position: relative;
-  left: 41%;
-  font-size: 40px;
-}
-#game-over-p{
-  position: relative;
-  left: 42%;
-  top: 30%;
-  font-size: 20px;
-}
-#refresh-button1 {
-  position: relative;
-  left: 40%;
-  top: 60%;
-  padding: 15px;
-  border-radius: 10px;
-  font-size: 25px;
-  background-color: rgba(155, 29, 32, 0.9);
-}
-#refresh-button2 {
-  position: relative;
-  left: 40%;
-  top: 60%;
-  padding: 15px;
-  border-radius: 10px;
-  font-size: 25px;
-  background-color: rgba(155, 29, 32, 0.9);
 }
 
-#game-win {
-  /* display: flex;
+/* Background of the Game Over Screen */
+#background-over {
+  position: fixed; 
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh; 
+  background-image: url('red-space-background.jpg');
+  background-size: cover;
+  background-position: center center;
+  background-repeat: no-repeat;
+  opacity: 0.8;
+  z-index: -1;
+}
+
+/* Foreground Game Over Screen Content */
+#game-over-screen {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
   justify-content: center;
-  align-items: center; */
+  background-color: rgb(0, 0, 0); 
+  color: #FFFFFF;
+  border-radius: 20px;
+  border: 5px solid #000000;
+  padding: 20px;
+  box-shadow: 0px 0px 20px rgba(0, 0, 0, 0.5);
+  animation: subtleFade 6s ease-in-out infinite;
+}
+
+/* Game Over Title Styling */
+#game-over-h1 {
+  font-size: 5rem;
+  color: #FF0000; 
+  text-shadow: 0 0 10px rgba(255, 0, 0, 0.7), 0 0 20px rgba(255, 0, 0, 0.4);
+  margin-bottom: 10px;
+  font-family: 'Chakra Petch', sans-serif;
+  animation: textPulse 2s infinite; 
+}
+
+/* Game Over Message Paragraph Styling */
+#game-over-p {
+  font-size: 1.2rem;
+  max-width: 80%;
+  color: rgba(255, 255, 255, 0.9);
+  margin-bottom: 20px;
+  font-family: 'Chakra Petch', sans-serif;
+  animation: subtleFade 6s ease-in-out infinite;
+}
+
+/* Retry Button Styling */
+#refresh-button1 {
+  padding: 15px 30px;
+  border-radius: 10px;
+  font-size: 1.5rem;
+  font-weight: bold;
+  background-color: #5a0000; 
+  color: #FFFFFF;
+  cursor: pointer;
+  box-shadow: 0 0 15px rgba(255, 0, 0, 0.7), 0 0 30px rgba(128, 0, 0, 0.4);
+  transition: transform 0.2s, box-shadow 0.2s;
+  margin-top: 20px;
+  font-family: 'Chakra Petch', sans-serif;
+}
+
+#refresh-button1:hover {
+  transform: scale(1.05);
+  box-shadow: 0 0 20px rgba(255, 0, 0, 0.9), 0 0 40px rgba(128, 0, 0, 0.6);
+}
+
+/* Animation Keyframes */
+@keyframes textPulse {
+  0%, 100% { text-shadow: 0 0 10px rgba(255, 0, 0, 0.5); }
+  50% { text-shadow: 0 0 20px rgba(255, 0, 0, 0.8); }
+}
+
+@keyframes subtleFade {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.8; }
+}
+/* Main Win Screen Container */
+#game-win {
+  display: none;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
   width: 80vw;
   height: 80vh;
-  background-color: rgba(0, 107, 166, 0.9);
   position: fixed;
   z-index: 100;
-  font-weight: 700;
-  font-size: 50px;
-  display: none;
   top: 10vh;
   left: 10vw;
-  color: rgb(32, 0, 128);
+  font-family: 'Chakra Petch', sans-serif;
+  text-align: center;
+}
+
+/* Full-Screen Background */
+#background-win {
+  position: fixed; 
+  top: 0;
+  left: 0;
+  width: 100vw; 
+  height: 100vh; 
+  background-image: url('space-win.jpg');
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  opacity: 0.8;
+  z-index: 0; 
+}
+
+/* Foreground Win Screen Content */
+#game-win-screen {
+  position: relative; 
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  background-color: rgba(0, 0, 0, 0.9); 
+  color: #FFFFFF;
   border-radius: 20px;
   border: 5px solid black;
+  padding: 20px;
+  box-shadow: 0px 0px 20px rgba(0, 0, 0, 0.5);
+  z-index: 1; 
+  animation: subtleFade 6s ease-in-out infinite;
+
 }
-#game-win-h1{
-  position: relative;
-  left: 41%;
-  font-size: 40px;
+
+/* Win Title Styling */
+#game-win-h1 {
+  font-size: 5rem;
+  color: #00FF00;
+  text-shadow: 0 0 10px rgba(0, 255, 0, 0.7), 0 0 20px rgba(0, 255, 0, 0.4);
+  margin-bottom: 10px;
+  font-family: 'Chakra Petch', sans-serif;
+  animation: textFlicker 2s infinite;
 }
-#game-win-p{
-  position: relative;
-  left: 42%;
-  top: 30%;
-  font-size: 20px;
+
+/* Win Message Paragraph Styling */
+#game-win-p {
+  font-size: 1.2rem;
+  max-width: 80%;
+  color: rgba(255, 255, 255, 0.9);
+  margin-bottom: 20px;
+  font-family: 'Chakra Petch', sans-serif;
+  animation: subtleFade 6s ease-in-out infinite;
 }
+
+/* Refresh Button Styling */
+#refresh-button2 {
+  padding: 15px 30px;
+  border-radius: 10px;
+  font-size: 1.5rem;
+  font-weight: bold;
+  background-color: #1b1b1b;
+  color: #FFFFFF;
+  cursor: pointer;
+  box-shadow: 0 0 15px rgba(0, 255, 0, 0.7), 0 0 30px rgba(0, 128, 0, 0.4);
+  transition: transform 0.2s, box-shadow 0.2s;
+  margin-top: 20px;
+}
+
+#refresh-button2:hover {
+  transform: scale(1.05);
+  box-shadow: 0 0 20px rgba(0, 255, 0, 0.9), 0 0 40px rgba(0, 128, 0, 0.6);
+}
+
+/* Animation Keyframes */
+@keyframes textFlicker {
+  0%, 100% { text-shadow: 0 0 10px rgba(0, 255, 0, 0.5); }
+  50% { text-shadow: 0 0 20px rgba(0, 255, 0, 0.8); }
+}
+
+@keyframes subtleFade {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.8; }
+}
+
 
 
 /* FOR THE TIMER */
@@ -295,6 +421,7 @@ html {
   left: 90vw;
   width: 130px; /* Increase the width */
   height: 130px; /* Increase the height */
+  z-index: 0;
 }
 
 svg {
@@ -316,7 +443,7 @@ svg {
 #timer {
   pointer-events: none;
   position: fixed;
-  z-index: 99;
+  z-index: 0;
   font-size: 40px;
   font-weight: 700;
   top: 9vh;
@@ -329,7 +456,7 @@ svg {
 .hotbar-container {
   position: fixed;
   display: flex;
-  z-index: 100;
+  z-index: 0;
   display: flex;
   justify-content: center;
   align-items: center;

@@ -33,22 +33,29 @@
         Move on you are doing great
       </div>
       <div id="game-over">
-        <h1 id="game-over-h1">Great Job</h1>
+        <div id="background-over"></div>
+        <div id="game-over-screen">
+        <h1 id="game-over-h1">Challenge Over</h1>
         <p id="game-over-p"></p>
         <button id="refresh-button1">Lets try once more</button>
+        </div>
       </div>
       <div id="game-win">
-        <h1 id="game-win-h1">Great Job</h1>
-        <p id="game-win-p">You found all the objects </p>
-        <button id="refresh-button2">Lets get faster now</button>
+        <div id="background-win"></div>
+        <div id="game-win-screen">
+          <h1 id="game-win-h1">Mission Complete!</h1>
+          <p id="game-win-p">You've proven yourself unstoppable! What's next? </p>
+          <button id="refresh-button2">Next challenge</button>
+        </div>
       </div>
       
       <div id="game-intro">
         <div id="background"></div> <!-- New sheer background div -->
-        <h1 id="game-intro-h1">Mystery in Monochrome</h1>
-        <p id="game-intro-p">The fate of the crew depends on you. </p>
-          <p id="game-intro-p">Recover the lost objects before the timer hits zero!</p>
-        <button id="start-button">Lets start search</button>
+        <div id="game-intro-screen">
+          <h1 id="game-intro-h1">Mystery in Monochrome</h1>
+          <p id="game-intro-p">The fate of the crew depends on you.<br>Recover the lost objects before the timer hits zero!</p>
+         <button id="start-button">Lets start search</button>
+        </div>
       </div>
       <audio id="ticking-music" src="ticking-clock2.mp3" autoplay loop></audio>  
       <audio id="background-music" src="background-music.mp3" autoplay loop></audio>  
