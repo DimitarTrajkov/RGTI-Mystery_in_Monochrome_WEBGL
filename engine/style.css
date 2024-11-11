@@ -120,7 +120,6 @@ html {
 
 /* Importing the Chakra Petch font */
 @import url('https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@400;500;700&display=swap');
-
 /* Sheer Background */
 #background {
   position: fixed;
@@ -130,36 +129,35 @@ html {
   height: 100vh;
   background-image: url('space.jpg');
   background-size: cover;
-  background-position: center center; 
-  background-repeat: no-repeat; 
-  z-index: 0;
-  opacity: 0.8; 
+  background-position: center center;
+  background-repeat: no-repeat;
+  z-index: -1; /* Ensure it is placed behind all other content */
+  opacity: 0.8;
+  transition: opacity 0.5s ease-in-out; /* Smooth fade-out */
 }
 
 /* Main Intro Screen Container */
 #game-intro {
   display: flex;
   flex-direction: column;
-  align-items: center; 
+  align-items: center;
   justify-content: center;
   width: 80vw;
   height: 80vh;
-  background-color: #000000; 
-  color: #FFFFFF; 
+  background-color: rgba(0, 0, 0, 0.7); /* Semi-transparent dark overlay for text */
+  color: #FFFFFF;
   position: fixed;
-  z-index: 100; 
+  z-index: 1; /* Ensure this content is in front of the background */
   border-radius: 20px;
   border: 5px solid black;
   padding: 20px;
   top: 6vh;
   left: 10vw;
   box-shadow: 0px 0px 20px rgba(0, 0, 0, 0.5);
-  font-family: 'Chakra Petch', sans-serif; 
-  text-align: center; 
-  
+  font-family: 'Chakra Petch', sans-serif;
+  text-align: center;
   animation: subtleFade 6s ease-in-out infinite;
 }
-
 
 /* Title Styling */
 #game-intro-h1 {
@@ -168,8 +166,7 @@ html {
   text-shadow: 0 0 10px rgba(255, 255, 255, 0.5), 0 0 20px rgba(255, 255, 255, 0.2);
   margin-bottom: 10px;
   animation: textFlicker 2s infinite;
-  font-family: 'Chakra Petch', sans-serif; /* Updated to Chakra Petch */
-  
+  font-family: 'Chakra Petch', sans-serif;
 }
 
 /* Subtitle Paragraph Styling */
@@ -179,8 +176,7 @@ html {
   color: rgba(255, 255, 255, 0.8);
   animation: subtleFade 6s ease-in-out infinite;
   margin-bottom: 20px;
-  font-family: 'Chakra Petch', sans-serif; 
-  
+  font-family: 'Chakra Petch', sans-serif;
 }
 
 /* Start Button Styling */
@@ -190,7 +186,7 @@ html {
   font-size: 1.5rem;
   font-weight: bold;
   background-color: #1b1b1b;
-  color: #FFFFFF; 
+  color: #FFFFFF;
   cursor: pointer;
   box-shadow: 0 0 15px rgba(130, 130, 130, 0.8), 0 0 30px rgba(103, 103, 103, 0.4);
   transition: transform 0.2s, box-shadow 0.2s;
@@ -212,7 +208,6 @@ html {
   0%, 100% { opacity: 1; }
   50% { opacity: 0.8; }
 }
-
 
 #game-over {
   /* display: flex;
