@@ -125,7 +125,7 @@ export class Physics {
     } else {
       document.getElementById(
         "game-over-p"
-      ).innerText = `You have founded: ${this.picked_up_items_counter} from the ${this.items_to_pick_up.length}`;
+      ).innerText = `You found: ${this.picked_up_items_counter} of the ${this.items_to_pick_up.length}`;
       this.gameOverElement.style.display = "block";
     }
     this.circleTimer.style.disply = "none";
