@@ -118,7 +118,8 @@ scene.addComponent({
 });
 
 // Hotbar
-const items_to_pick_up = ["Chair.002"];
+const how_many_items = 3;
+const items_to_pick_up = [];
 // document.getElementById("image-subject").src = `${items_to_pick_up[0]}.jpeg`;
 let colorIndex = 0;
 var hotbar = document.querySelector(".hotbar");
@@ -135,7 +136,21 @@ function createHotbar(items) {
     hotbar.appendChild(img_container);
   });
 }
-createHotbar(items_to_pick_up);
+function select_items_to_pick_up(how_many_items) {
+  var indexes = [];
+  for (let i=0; i<pickable_items.length; i++) {
+    indexes.push(i);
+  }
+  while (indexes.length > how_many_items) {
+    const index = Math.floor(Math.random() * indexes.length);
+    indexes.splice(index, 1);
+  }
+  indexes.forEach((index) => {
+    items_to_pick_up.push(pickable_items[index]);
+  });
+  createHotbar(items_to_pick_up);
+}
+select_items_to_pick_up(how_many_items);
 
 const light = new Node();
 const LightTranslationComponent = new Transform({
@@ -153,32 +168,25 @@ light.draw = true; // Add `draw` property to control rendering
 scene.addChild(light);
 
 // Load other static nodes and set `draw` property
-[
+var static_nodes = [
   "Chair.002","Chair.003", "Chair.004","Ceiling.Panels", "Plane", "Wall.Bar.Back.Overhang", "Wall.Bar.Back.Unfurnished", "Wall.Bar.Back.Unfurnished.001", "Wall.Bar.Back.Unfurnished.002",
   "Wall.Door.Overhang", "Bar_Stool.003",
    "Wall.Internal.001", "Wall.Internal.002", "Wall.Internal.003", "Wall.Internal.004", "Wall.Internal.005",
    "Wall.Internal.006", "Wall.Internal.007", "Wall.Internal.008", "Wall.Internal.009", "Wall.Internal.010",
    "Wall.Internal.011", "Wall.Internal.012", "Wall.Internal.013", "Wall.Internal.014", "Wall.Internal.015",
    "Wall.Internal.016", "Wall.Internal.017"
-].forEach((nodeName) => {
+]
+static_nodes.forEach((nodeName) => {
   const node = loader.loadNode(nodeName);
   node.isStatic = true;
   node.draw = true;
   node.id = nodeName;
-  node.pickable = true;
+  node.pickable = false;
 });
 
-// boudaries of the space are not pickable
-[
-  "Plane", "Wall.Bar.Back.Overhang", "Wall.Bar.Back.Unfurnished", "Wall.Bar.Back.Unfurnished.001", "Wall.Bar.Back.Unfurnished.002",
-  "Wall.Door.Overhang", "Bar_Stool.003",
-   "Wall.Internal.001", "Wall.Internal.002", "Wall.Internal.003", "Wall.Internal.004", "Wall.Internal.005",
-   "Wall.Internal.006", "Wall.Internal.007", "Wall.Internal.008", "Wall.Internal.009", "Wall.Internal.010",
-   "Wall.Internal.011", "Wall.Internal.012", "Wall.Internal.013", "Wall.Internal.014", "Wall.Internal.015",
-   "Wall.Internal.016", "Wall.Internal.017"
-].forEach((nodeName) => {
+pickable_items.forEach((nodeName) => {
   const node = loader.loadNode(nodeName);
-  node.pickable = false;
+  node.pickable = true;
 });
 
 const physics = new Physics(
