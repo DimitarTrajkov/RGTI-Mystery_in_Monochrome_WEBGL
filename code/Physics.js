@@ -137,6 +137,7 @@ export class Physics {
   }
 
   update(t, dt) {
+    let should_show_text = false;
     this.scene.traverse((node) => {
       // console.log(node.id, node.aabb);
       // if camera
@@ -147,12 +148,26 @@ export class Physics {
             // check for colisions
             this.resolveCollision(node, other);
             // check for pick up
-            this.isItemInCenterAndNear(node, other);
+            let isNear = this.isItemInCenterAndNear(node, other);
+            if (isNear) {
+              if (this.shouldHideOnCollision) {
+                this.checkIfCorrectItemPickedUp(itemNode);
+              } else {
+                should_show_text = true;
+              }
+            }
           }
         });
         this.checkLift(node);
       }
     });
+
+    if (should_show_text) {
+      document.getElementById("pickup-text").style.display = "block";
+    } else {
+      document.getElementById("pickup-text").style.display = "none";
+    }
+
     // Reset the flag after each update
     this.shouldHideOnCollision = false;
     this.liftkeyUp = false;
@@ -324,14 +339,14 @@ export class Physics {
     thresholdAngle = 5,
   ) {
     if (!itemNode.pickable) {
-      return;
+      return false;
     }
     const cameraPosition = cameraNode.getComponentOfType(Transform).translation;
     const itemPosition = itemNode.getComponentOfType(Transform).translation;
 
     const distance = vec3.distance(cameraPosition, itemPosition);
     if (distance > thresholdDistance) {
-      return;
+      return false;
     }
 
     // Calculate direction vector from camera to item
@@ -348,20 +363,12 @@ export class Physics {
 
     // Calculate the angle between camera forward direction and direction to item
     const angle = Math.acos(vec3.dot(forwardDir, toItemDir)) * (180 / Math.PI);
-
     // Check if item is within the specified angle threshold for "center"
     if (angle >= thresholdAngle) {
-      return;
+      return false;
     }
     // console.log(this.shouldHideOnCollision);
-    if (this.shouldHideOnCollision) {
-      this.checkIfCorrectItemPickedUp(itemNode);
-    } else {
-      document.getElementById("pickup-text").style.display = "block";
-      setTimeout(() => {
-        document.getElementById("pickup-text").style.display = "none";
-      }, 500);
-    }
+    return true;
   }
   checkLift(node) {
     const transform = node.getComponentOfType(Transform);
