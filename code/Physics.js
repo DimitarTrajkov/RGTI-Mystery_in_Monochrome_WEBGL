@@ -9,23 +9,27 @@ export class Physics {
     colorArray,
     lightComponent,
     animation_up,
-    animation_down
+    animation_down,
+    button_press_in_animation
   ) {
     this.scene = scene;
-    this.shouldHideOnCollision = false;
+    this.itemPickupKeyPressed = false;
     this.liftkeyUp = false;
     this.liftkeyDown = false;
+    this.interactionKey = false;
     this.items_to_pick_up = items_to_pick_up;
     this.picked_up_items_counter = 0;
     this.colorArray = colorArray;
     this.colorIndex = 0;
     this.lightComponent = lightComponent;
-    this.timeLeft = 15;
+    this.timeLeft = 150;
     this.completed_the_game = false;
     this.floor_number = 0;
     this.animate_lift_doors = false;
     this.animation_up = animation_up;
     this.animation_down = animation_down;
+    this.button_press_in_animation = button_press_in_animation;
+    
     // Load audio elements without autoplay
     this.backgroundMusic = document.getElementById("background-music");
     this.correctMusic = document.getElementById("correct-music");
@@ -59,11 +63,13 @@ export class Physics {
     // letter P for pick up
     document.addEventListener("keydown", (event) => {
       if (event.key === "p" || event.key === "P") {
-        this.shouldHideOnCollision = true;
+        this.itemPickupKeyPressed = true;
       } else if (event.key === "ArrowUp") {
         this.liftkeyUp = true;
       } else if (event.key === "ArrowDown") {
         this.liftkeyDown = true;
+      } else if (event.key === "e" || event.key === "E") {
+        this.interactionKey = true;
       }
     });
   }
@@ -137,7 +143,8 @@ export class Physics {
   }
 
   update(t, dt) {
-    let should_show_text = false;
+    document.getElementById("pickup-text").style.display = "none";
+    document.getElementById("lift-text").style.display = "none";
     this.scene.traverse((node) => {
       // console.log(node.id, node.aabb);
       // if camera
@@ -147,29 +154,17 @@ export class Physics {
           if (node !== other && other.isStatic) {
             // check for colisions
             this.resolveCollision(node, other);
-            // check for pick up
-            let isNear = this.isItemInCenterAndNear(node, other);
-            if (isNear) {
-              if (this.shouldHideOnCollision) {
-                this.checkIfCorrectItemPickedUp(itemNode);
-              } else {
-                should_show_text = true;
-              }
-            }
+            // check for interaction
+            this.checkInteraction(node, other);
           }
         });
-        this.checkLift(node);
+        // this.checkLift(node);
       }
     });
 
-    if (should_show_text) {
-      document.getElementById("pickup-text").style.display = "block";
-    } else {
-      document.getElementById("pickup-text").style.display = "none";
-    }
-
     // Reset the flag after each update
-    this.shouldHideOnCollision = false;
+    this.interactionKey = false;
+    this.itemPickupKeyPressed = false;
     this.liftkeyUp = false;
     this.liftkeyDown = false;
   }
@@ -338,9 +333,6 @@ export class Physics {
     thresholdDistance = 15,
     thresholdAngle = 5,
   ) {
-    if (!itemNode.pickable) {
-      return false;
-    }
     const cameraPosition = cameraNode.getComponentOfType(Transform).translation;
     const itemPosition = itemNode.getComponentOfType(Transform).translation;
 
@@ -367,36 +359,56 @@ export class Physics {
     if (angle >= thresholdAngle) {
       return false;
     }
-    // console.log(this.shouldHideOnCollision);
+    // console.log(this.itemPickupKeyPressed);
     return true;
   }
   checkLift(node) {
-    const transform = node.getComponentOfType(Transform);
-    if (
+    // const transform = node.getComponentOfType(Transform);
+    /* if (
       transform.translation[2] < 5 ||
       transform.translation[2] > 9 ||
       transform.translation[0] < -1.3 ||
       transform.translation[0] > 1.4
     )
-      return;
+      return; */
     // location of the camera must be in the lift
     // 1 is the highest floor
-    if (this.liftkeyUp && this.floor_number <1) {
+
+    if ((this.liftkeyUp || this.interactionKey) && this.floor_number == 0) {
       // get the animation
       this.floor_number ++;
+      this.button_press_in_animation.play();
       this.animation_up.play();
-    } else if (this.liftkeyDown && this.floor_number > 0) {
+    } else if ((this.liftkeyDown || this.interactionKey) && this.floor_number == 1) {
       this.floor_number --;
+      this.button_press_in_animation.play();
       this.animation_down.play();
-    } else {
-      if (this.lift_text_blocked)
-        return;
-      document.getElementById("lift-text").style.display = "block";
-      this.lift_text_blocked = true;
-      setTimeout(() => {
-        document.getElementById("lift-text").style.display = "none";
-        this.lift_text_blocked = false;
-      }, 500);
+    }
+    // } else {
+    //   if (this.lift_text_blocked)
+    //     return;
+
+    //   this.lift_text_blocked = true;
+    //   setTimeout(() => {
+    //     this.lift_text_blocked = false;
+    //   }, 500);
+    // }
+  }
+
+  checkInteraction(camera, node) {
+    if (node.pickable || node.switchable) {
+      let isNear = this.isItemInCenterAndNear(camera, node);
+      if (isNear) {
+        if (node.pickable) {
+            document.getElementById("pickup-text").style.display = "block";
+            if (this.interactionKey || this.itemPickupKeyPressed) {
+              this.checkIfCorrectItemPickedUp(node);
+            }
+        } else if (node.switchable) {
+          document.getElementById("lift-text").style.display = "block";
+          this.checkLift(node);
+        }
+      }
     }
   }
 }

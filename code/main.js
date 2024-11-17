@@ -45,13 +45,18 @@ const colorArray = [
 ];
 // TODO: fix it such that the lift goes down as well as the room
 // const pickable_items = ["Box.002", "Box.004", "Box.005", "Suzanne","Cone", "Box.003","Floor","Camera"];
-const pickable_items = ["Chair.002","Chair.003", "Chair.004"];
+const pickable_items = ["Chair.004"];
+const switch_items_names = ["Chair.003"];
+const switch_items = [];
 const nodes = [];
 const liftDoor = [];
 for (let i of pickable_items) {
   // nodes.push(loader.loadNode(i));
 }
-// liftDoor.push(loader.loadNode("Cube.002"));
+liftDoor.push(loader.loadNode("Chair.002"));
+for (let i of switch_items_names) {
+  switch_items.push(loader.loadNode(i));
+}
 const close_up_door_up = new LinearAnimator(liftDoor, {
   dx: 3.3,  
   dy: 0,
@@ -92,10 +97,27 @@ const animacija_down = new LinearAnimator(nodes, {
   duration: 1,
   loop: false,
 });
+const button_press_in_animation = new LinearAnimator(switch_items, {
+  dx: 0,  
+  dy: 0,
+  dz: 0.1,
+  startTime: 0,
+  duration: 0.1,
+  loop: false,
+});
+const button_press_out_animation = new LinearAnimator(switch_items, {
+  dx: 0,  
+  dy: 0,
+  dz: -0.1,
+  startTime: 0,
+  duration: 0.1,
+  loop: false,
+});
 close_up_door_up.setNextAnimation(animacija_down);
 close_up_door_down.setNextAnimation(animacija_up);
 animacija_up.setNextAnimation(open_up_door);
 animacija_down.setNextAnimation(open_up_door);
+button_press_in_animation.setNextAnimation(button_press_out_animation);
 scene.addComponent({
   update(t, dt) {
     // Only update if the animation is playing
@@ -113,6 +135,12 @@ scene.addComponent({
     }
     if (animacija_down.playing) {
       animacija_down.update(t, dt);
+    }
+    if (button_press_in_animation.playing) {
+      button_press_in_animation.update(t, dt);
+    }
+    if (button_press_out_animation.playing) {
+      button_press_out_animation.update(t, dt);
     }
   },
 });
@@ -140,6 +168,9 @@ function select_items_to_pick_up(how_many_items) {
   var indexes = [];
   for (let i=0; i<pickable_items.length; i++) {
     indexes.push(i);
+  }
+  if (how_many_items > pickable_items.length) {
+    how_many_items = pickable_items.length;
   }
   while (indexes.length > how_many_items) {
     const index = Math.floor(Math.random() * indexes.length);
@@ -189,13 +220,19 @@ pickable_items.forEach((nodeName) => {
   node.pickable = true;
 });
 
+switch_items_names.forEach((nodeName) => {
+  const node = loader.loadNode(nodeName);
+  node.switchable = true;
+});
+
 const physics = new Physics(
   scene,
   items_to_pick_up,
   colorArray,
   lightComponent,
   close_up_door_up,
-  close_up_door_down
+  close_up_door_down,
+  button_press_in_animation
 );
 scene.traverse((node) => {
   const model = node.getComponentOfType(Model);
