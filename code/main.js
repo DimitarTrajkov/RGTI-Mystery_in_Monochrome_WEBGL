@@ -20,11 +20,13 @@ await renderer.initialize();
 
 const loader = new GLTFLoader();
 // await loader.load("scene/untitled4.gltf");
-await loader.load("scene/try1/scene11.gltf");
+await loader.load("scene/test03.gltf");
+// await loader.load("scene/starship_bar.gltf");
 
 const scene = loader.loadScene(loader.defaultScene);
-// console.log(scene);
+console.log(scene);
 const camera = loader.loadNode("Camera");
+console.log(camera);
 camera.addComponent(new FirstPersonController(camera, canvas));
 camera.isDynamic = true; // is_camera
 camera.aabb = {
@@ -35,7 +37,7 @@ camera.aabb = {
 
 // Define color array for light and initialize color index
 const colorArray = [
-  [255,255,255],
+  [255, 255, 255],
   [0, 0, 255],
   [0, 255, 0],
   [0, 255, 255],
@@ -45,20 +47,20 @@ const colorArray = [
 ];
 // TODO: fix it such that the lift goes down as well as the room
 // const pickable_items = ["Box.002", "Box.004", "Box.005", "Suzanne","Cone", "Box.003","Floor","Camera"];
-const pickable_items = ["Chair.004"];
-const switch_items_names = ["Chair.003"];
+const pickable_items = [];
+const switch_items_names = [];
 const switch_items = [];
 const nodes = [];
 const liftDoor = [];
 for (let i of pickable_items) {
   // nodes.push(loader.loadNode(i));
 }
-liftDoor.push(loader.loadNode("Chair.002"));
+// liftDoor.push(loader.loadNode("Chair.002"));
 for (let i of switch_items_names) {
   switch_items.push(loader.loadNode(i));
 }
 const close_up_door_up = new LinearAnimator(liftDoor, {
-  dx: 3.3,  
+  dx: 3.3,
   dy: 0,
   dz: 0,
   startTime: 0,
@@ -66,7 +68,7 @@ const close_up_door_up = new LinearAnimator(liftDoor, {
   loop: false,
 });
 const close_up_door_down = new LinearAnimator(liftDoor, {
-  dx: 3.3,  
+  dx: 3.3,
   dy: 0,
   dz: 0,
   startTime: 0,
@@ -74,7 +76,7 @@ const close_up_door_down = new LinearAnimator(liftDoor, {
   loop: false,
 });
 const open_up_door = new LinearAnimator(liftDoor, {
-  dx: -3.3,  
+  dx: -3.3,
   dy: 0,
   dz: 0,
   startTime: 0,
@@ -82,7 +84,7 @@ const open_up_door = new LinearAnimator(liftDoor, {
   loop: false,
 });
 const animacija_up = new LinearAnimator(nodes, {
-  dx: 0,  
+  dx: 0,
   dy: 2,
   dz: 0,
   startTime: 0,
@@ -90,7 +92,7 @@ const animacija_up = new LinearAnimator(nodes, {
   loop: false,
 });
 const animacija_down = new LinearAnimator(nodes, {
-  dx: 0,  
+  dx: 0,
   dy: -2,
   dz: 0,
   startTime: 0,
@@ -98,7 +100,7 @@ const animacija_down = new LinearAnimator(nodes, {
   loop: false,
 });
 const button_press_in_animation = new LinearAnimator(switch_items, {
-  dx: 0,  
+  dx: 0,
   dy: 0,
   dz: 0.1,
   startTime: 0,
@@ -106,7 +108,7 @@ const button_press_in_animation = new LinearAnimator(switch_items, {
   loop: false,
 });
 const button_press_out_animation = new LinearAnimator(switch_items, {
-  dx: 0,  
+  dx: 0,
   dy: 0,
   dz: -0.1,
   startTime: 0,
@@ -166,7 +168,7 @@ function createHotbar(items) {
 }
 function select_items_to_pick_up(how_many_items) {
   var indexes = [];
-  for (let i=0; i<pickable_items.length; i++) {
+  for (let i = 0; i < pickable_items.length; i++) {
     indexes.push(i);
   }
   if (how_many_items > pickable_items.length) {
@@ -199,22 +201,24 @@ light.draw = true; // Add `draw` property to control rendering
 scene.addChild(light);
 
 // Load other static nodes and set `draw` property
-var static_nodes = [
-  "Chair.002","Chair.003", "Chair.004","Ceiling.Panels", "Plane", "Wall.Bar.Back.Overhang", "Wall.Bar.Back.Unfurnished", "Wall.Bar.Back.Unfurnished.001", "Wall.Bar.Back.Unfurnished.002",
-  "Wall.Door.Overhang", "Bar_Stool.003",
-   "Wall.Internal.001", "Wall.Internal.002", "Wall.Internal.003", "Wall.Internal.004", "Wall.Internal.005",
-   "Wall.Internal.006", "Wall.Internal.007", "Wall.Internal.008", "Wall.Internal.009", "Wall.Internal.010",
-   "Wall.Internal.011", "Wall.Internal.012", "Wall.Internal.013", "Wall.Internal.014", "Wall.Internal.015",
-   "Wall.Internal.016", "Wall.Internal.017"
-]
-static_nodes.forEach((nodeName) => {
-  const node = loader.loadNode(nodeName);
-  node.isStatic = true; // for colision detection
-  node.draw = true; // da narise
-  node.id = nodeName; // da imajo nek id
-  node.pickable = true; // da lahko jih uzamemo
+// var static_nodes = [
+//   "Chair.002","Chair.003", "Chair.004","Ceiling.Panels", "Plane", "Wall.Bar.Back.Overhang", "Wall.Bar.Back.Unfurnished", "Wall.Bar.Back.Unfurnished.001", "Wall.Bar.Back.Unfurnished.002",
+//   "Wall.Door.Overhang", "Bar_Stool.003",
+//    "Wall.Internal.001", "Wall.Internal.002", "Wall.Internal.003", "Wall.Internal.004", "Wall.Internal.005",
+//    "Wall.Internal.006", "Wall.Internal.007", "Wall.Internal.008", "Wall.Internal.009", "Wall.Internal.010",
+//    "Wall.Internal.011", "Wall.Internal.012", "Wall.Internal.013", "Wall.Internal.014", "Wall.Internal.015",
+//    "Wall.Internal.016", "Wall.Internal.017"
+// ]
 
-});
+// TODO: NAREDI DA BO FOR EACH
+// static_nodes.forEach((nodeName) => {
+//   const node = loader.loadNode(nodeName);
+//   node.isStatic = true; // for colision detection
+//   node.draw = true; // da narise
+//   node.id = nodeName; // da imajo nek id
+//   node.pickable = true; // da lahko jih uzamemo
+
+// });
 
 pickable_items.forEach((nodeName) => {
   const node = loader.loadNode(nodeName);
@@ -239,28 +243,21 @@ const physics = new Physics(
 scene.traverse((node) => {
   const model = node.getComponentOfType(Model);
   if (!model) return;
-  // console.log(model);
+
   model.primitives.forEach((primitive) => {
+    console.log(primitive);
     const material = primitive.material;
+    if (!material) return; // for debug purpose only
     material.diffuse = 20;
     material.specular = 1;
     material.shininess = 200;
   });
-  // console.log("difuse specular and shininess added");
   const boxes = model.primitives.map((primitive) =>
     calculateAxisAlignedBoundingBox(primitive.mesh)
   );
-  // console.log("boxes",boxes);
-  // console.log("node",node);
-  // node.aabb  = 5; // testing  
-  // console.log("node",node);
-  // ORIGINAL
-  // node.aabb = mergeAxisAlignedBoundingBoxes(boxes);
-  // console.log(node);
-  // console.log("x",mergeAxisAlignedBoundingBoxes(boxes));
-  var  x = mergeAxisAlignedBoundingBoxes(boxes);
+  var x = mergeAxisAlignedBoundingBoxes(boxes);
   node.aabb = x;
-  // console.log("blabla2");
+  node.isStatic = false;
 });
 function update(time, dt) {
   scene.traverse((node) => {
@@ -271,7 +268,7 @@ function update(time, dt) {
   // make the light little flickering
   lightComponent.intensity += Math.random() * 0.3 - 0.15;
   lightComponent.intensity = Math.max(1.5, lightComponent.intensity);
-  lightComponent.intensity = Math.min(4.5, lightComponent.intensity);
+  lightComponent.intensity = Math.min(1.5, lightComponent.intensity);
   physics.update(time, dt);
 }
 
