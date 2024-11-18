@@ -26,7 +26,7 @@ const scene = loader.loadScene(loader.defaultScene);
 // console.log(scene);
 const camera = loader.loadNode("Camera");
 camera.addComponent(new FirstPersonController(camera, canvas));
-camera.isDynamic = true;
+camera.isDynamic = true; // is_camera
 camera.aabb = {
   min: [-0.2, -0.8, -0.4],
   max: [0.2, 0.8, 0.4],
@@ -144,10 +144,10 @@ scene.addChild(light);
    "Wall.Internal.016", "Wall.Internal.017"
 ].forEach((nodeName) => {
   const node = loader.loadNode(nodeName);
-  node.isStatic = true;
-  node.draw = true;
-  node.id = nodeName;
-  node.pickable = true;
+  node.isStatic = true; // for colision detection
+  node.draw = true; // da narise
+  node.id = nodeName; // da imajo nek id
+  node.pickable = true; // da lahko jih uzamemo
 });
 
 // boudaries of the space are not pickable
@@ -160,7 +160,7 @@ scene.addChild(light);
    "Wall.Internal.016", "Wall.Internal.017"
 ].forEach((nodeName) => {
   const node = loader.loadNode(nodeName);
-  node.pickable = false;
+  node.pickable = false; // vse dzide pa tleh
 });
 
 const physics = new Physics(

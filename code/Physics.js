@@ -39,6 +39,7 @@ export class Physics {
     this.wrongMusic.pause();
     this.tickingMusic.pause();
 
+    // all screens
     this.timerElement = document.getElementById("timer");
     this.gameOverElement = document.getElementById("game-over");
     this.gameWinElement = document.getElementById("game-win");
@@ -154,9 +155,9 @@ export class Physics {
       }
     });
     // Reset the flag after each update
-    this.shouldHideOnCollision = false;
-    this.liftkeyUp = false;
-    this.liftkeyDown = false;
+    this.shouldHideOnCollision = false; // E
+    this.liftkeyUp = false; // arrowUp
+    this.liftkeyDown = false; // arrowDown
   }
 
   intervalIntersection(min1, max1, min2, max2) {
@@ -298,7 +299,7 @@ export class Physics {
       return;
     }
     // console.log(this.shouldHideOnCollision);
-    if (this.shouldHideOnCollision) {
+    if (this.shouldHideOnCollision) { // tipko za pick up (E)
       if (itemNode.id == this.items_to_pick_up[this.picked_up_items_counter]) {
         // next item
         this.picked_up_items_counter++;
