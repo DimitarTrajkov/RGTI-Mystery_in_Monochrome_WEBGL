@@ -89,6 +89,23 @@ const materialBindGroupLayout = {
     ],
 };
 
+// Create bitmap for missing texture
+const missingTextureBitmap = await fetch('./scene/missing-texture.png')
+        .then(response => response.blob())
+        .then(blob => createImageBitmap(blob));
+
+
+
+// Temporary fix: Teleport
+export function teleport(x, y, z) {
+    Renderer.temp = 1;
+    Renderer.teleportX = x;
+    Renderer.teleportY = y;
+    Renderer.teleportZ = z;
+}
+window.teleport = teleport;
+// End of Teleport
+
 export class Renderer extends BaseRenderer {
 
     constructor(canvas) {
@@ -235,17 +252,22 @@ export class Renderer extends BaseRenderer {
         if (this.gpuObjects.has(texture)) {
             return this.gpuObjects.get(texture);
         }
-        console.log(texture.image);
-        console.log(texture.isSRGB);
-        console.log(texture.sampler);
         const { gpuTexture } = this.prepareImage(texture.image, texture.isSRGB);
         const { gpuSampler } = this.prepareSampler(texture.sampler);
-        console.log(gpuTexture);
-        console.log(gpuSampler);
         const gpuObjects = { gpuTexture, gpuSampler };
         this.gpuObjects.set(texture, gpuObjects);
-        console.log(gpuObjects);
         return gpuObjects;
+    }
+
+    createMonocolorBitmap(color) {
+        // Make an HTML canvas with a single pixel of the desired color
+        const canvas = document.createElement('canvas');
+        canvas.width = 1;
+        canvas.height = 1;
+        const context = canvas.getContext('2d');
+        context.fillStyle = `rgb(${color.map(c => Math.round(c * 255)).join(',')})`;
+        context.fillRect(0, 0, 1, 1);
+        return canvas;
     }
 
     prepareMaterial(material) {
@@ -253,7 +275,18 @@ export class Renderer extends BaseRenderer {
             return this.gpuObjects.get(material);
         }
 
-        const baseTexture = this.prepareTexture(material.baseTexture);
+        if (!material.baseTexture && !material.baseFactor) {
+            // If material has no texture and no color, use missing texture
+            console.log('Missing texture for material', material);
+            material.baseTexture = { image: missingTextureBitmap, sampler: {} };
+
+        } else if (!material.baseTexture && material.baseFactor) {
+            // If material has no texture but has color, create a monochromatic texture
+            let colorCanvas = this.createMonocolorBitmap(material.baseFactor);
+            material.baseTexture = { image: colorCanvas, sampler: {} };
+        }
+
+        let baseTexture = this.prepareTexture(material.baseTexture);
 
         const materialUniformBuffer = this.device.createBuffer({
             size: 32,
@@ -275,6 +308,17 @@ export class Renderer extends BaseRenderer {
     }
 
     render(scene, camera) {
+
+        if (Renderer.temp !== 0) { // Temporary fix: Teleport
+            let matrix = camera.components[0].translation;
+            matrix[0]+=Renderer.teleportX;
+            matrix[1]+=Renderer.teleportY;
+            matrix[2]+=Renderer.teleportZ;
+
+            camera.components[0].translation = matrix;
+            Renderer.temp = 0;
+        }
+
         if (this.depthTexture.width !== this.canvas.width || this.depthTexture.height !== this.canvas.height) {
             this.recreateDepthTexture();
         }
@@ -373,6 +417,7 @@ export class Renderer extends BaseRenderer {
 
     renderPrimitive(primitive) {
         const material = primitive.material;
+
         const { materialUniformBuffer, materialBindGroup } = this.prepareMaterial(material);
         this.device.queue.writeBuffer(materialUniformBuffer, 0, new Float32Array([
             ...material.baseFactor,
@@ -390,3 +435,9 @@ export class Renderer extends BaseRenderer {
     }
 
 }
+
+// Temporary fix: Teleport
+Renderer.temp = 0;
+Renderer.teleportX = 0;
+Renderer.teleportY = 0;
+Renderer.teleportZ = 0;

@@ -9,23 +9,27 @@ export class Physics {
     colorArray,
     lightComponent,
     animation_up,
-    animation_down
+    animation_down,
+    button_press_in_animation
   ) {
     this.scene = scene;
-    this.shouldHideOnCollision = false;
+    this.itemPickupKeyPressed = false;
     this.liftkeyUp = false;
     this.liftkeyDown = false;
+    this.interactionKey = false;
     this.items_to_pick_up = items_to_pick_up;
     this.picked_up_items_counter = 0;
     this.colorArray = colorArray;
     this.colorIndex = 0;
     this.lightComponent = lightComponent;
-    this.timeLeft = 30;
+    this.timeLeft = 150;
     this.completed_the_game = false;
     this.floor_number = 0;
     this.animate_lift_doors = false;
     this.animation_up = animation_up;
     this.animation_down = animation_down;
+    this.button_press_in_animation = button_press_in_animation;
+    
     // Load audio elements without autoplay
     this.backgroundMusic = document.getElementById("background-music");
     this.correctMusic = document.getElementById("correct-music");
@@ -60,11 +64,13 @@ export class Physics {
     // letter P for pick up
     document.addEventListener("keydown", (event) => {
       if (event.key === "p" || event.key === "P") {
-        this.shouldHideOnCollision = true;
+        this.itemPickupKeyPressed = true;
       } else if (event.key === "ArrowUp") {
         this.liftkeyUp = true;
       } else if (event.key === "ArrowDown") {
         this.liftkeyDown = true;
+      } else if (event.key === "e" || event.key === "E") {
+        this.interactionKey = true;
       }
     });
   }
@@ -126,7 +132,7 @@ export class Physics {
     } else {
       document.getElementById(
         "game-over-p"
-      ).innerText = `You have founded: ${this.picked_up_items_counter} from the ${this.items_to_pick_up.length}`;
+      ).innerText = `You found: ${this.picked_up_items_counter} of the ${this.items_to_pick_up.length}`;
       this.gameOverElement.style.display = "block";
     }
     this.circleTimer.style.disply = "none";
@@ -138,6 +144,8 @@ export class Physics {
   }
 
   update(t, dt) {
+    document.getElementById("pickup-text").style.display = "none";
+    document.getElementById("lift-text").style.display = "none";
     this.scene.traverse((node) => {
       // console.log(node.id, node.aabb);
       // if camera
@@ -147,17 +155,25 @@ export class Physics {
           if (node !== other && other.isStatic) {
             // check for colisions
             this.resolveCollision(node, other);
-            // check for pick up
-            this.isItemInCenterAndNear(node, other);
+            // check for interaction
+            this.checkInteraction(node, other);
           }
         });
-        this.checkLift(node);
+        // this.checkLift(node);
       }
     });
+
     // Reset the flag after each update
+<<<<<<< HEAD
     this.shouldHideOnCollision = false; // E
     this.liftkeyUp = false; // arrowUp
     this.liftkeyDown = false; // arrowDown
+=======
+    this.interactionKey = false;
+    this.itemPickupKeyPressed = false;
+    this.liftkeyUp = false;
+    this.liftkeyDown = false;
+>>>>>>> ba5953ddeadf35965d13fd55448939d5a44725c8
   }
 
   intervalIntersection(min1, max1, min2, max2) {
@@ -261,22 +277,75 @@ export class Physics {
     this.colorIndex = (this.colorIndex + 1) % this.colorArray.length;
     this.lightComponent.color = this.colorArray[this.colorIndex];
   }
+
+  wrongItemPickedUp() {
+    // console.log(itemNode.id);
+    // logic for wrong pick
+    this.timeLeft -= 1;
+    this.timerElement.style.color = "red";
+    this.circleTimer.style.stroke = "red";
+    this.wrongMusic.play();
+    document.getElementById("wrong-item").style.display = "block";
+    setTimeout(() => {
+      document.getElementById("wrong-item").style.display = "none";
+      this.timerElement.style.color = "black";
+      this.circleTimer.style.stroke = "black";
+      this.wrongMusic.pause();
+    }, 500);
+  }
+
+  correctItemPickedUp(itemNode) {
+    this.picked_up_items_counter++;
+    itemNode.draw = false;
+    itemNode.isStatic = false;
+    if (this.picked_up_items_counter == this.items_to_pick_up.length) {
+      this.completed_the_game = true;
+      this.showGameOver();
+      return;
+    }
+    this.updateLightColor();
+
+    // logic for correct pick
+    this.timeLeft += 3;
+    this.timerElement.style.color = "green";
+    this.circleTimer.style.stroke = "green";
+    this.correctMusic.play();
+    document.getElementById("correct-item").style.display = "block";
+    setTimeout(() => {
+      document.getElementById("correct-item").style.display = "none";
+      this.timerElement.style.color = "black";
+      this.circleTimer.style.stroke = "black";
+      this.correctMusic.pause();
+    }, 500);
+  }
+
+  checkIfCorrectItemPickedUp(itemNode) {
+    // Check if the item picked up is any of the items needed to be picked up
+    for (let i = 0; i < this.items_to_pick_up.length; i++) {
+      if (itemNode.id == this.items_to_pick_up[i]) {
+        document.querySelectorAll(".hotbar-item")[i].classList.add("grayscale");
+
+        this.correctItemPickedUp(itemNode);
+        return;
+      }
+    }
+
+    this.wrongItemPickedUp();
+  }
+
   // finding if subjects are near each other
   isItemInCenterAndNear(
     cameraNode,
     itemNode,
-    thresholdDistance = 3,
-    thresholdAngle = 25
+    thresholdDistance = 15,
+    thresholdAngle = 5,
   ) {
-    if (!itemNode.pickable) {
-      return;
-    }
     const cameraPosition = cameraNode.getComponentOfType(Transform).translation;
     const itemPosition = itemNode.getComponentOfType(Transform).translation;
 
     const distance = vec3.distance(cameraPosition, itemPosition);
     if (distance > thresholdDistance) {
-      return;
+      return false;
     }
 
     // Calculate direction vector from camera to item
@@ -293,9 +362,9 @@ export class Physics {
 
     // Calculate the angle between camera forward direction and direction to item
     const angle = Math.acos(vec3.dot(forwardDir, toItemDir)) * (180 / Math.PI);
-
     // Check if item is within the specified angle threshold for "center"
     if (angle >= thresholdAngle) {
+<<<<<<< HEAD
       return;
     }
     // console.log(this.shouldHideOnCollision);
@@ -348,35 +417,60 @@ export class Physics {
       setTimeout(() => {
         document.getElementById("pickup-text").style.display = "none";
       }, 500);
+=======
+      return false;
+>>>>>>> ba5953ddeadf35965d13fd55448939d5a44725c8
     }
+    // console.log(this.itemPickupKeyPressed);
+    return true;
   }
   checkLift(node) {
-    const transform = node.getComponentOfType(Transform);
-    if (
+    // const transform = node.getComponentOfType(Transform);
+    /* if (
       transform.translation[2] < 5 ||
       transform.translation[2] > 9 ||
       transform.translation[0] < -1.3 ||
       transform.translation[0] > 1.4
     )
-      return;
+      return; */
     // location of the camera must be in the lift
     // 1 is the highest floor
-    if (this.liftkeyUp && this.floor_number <1) {
+
+    if ((this.liftkeyUp || this.interactionKey) && this.floor_number == 0) {
       // get the animation
       this.floor_number ++;
+      this.button_press_in_animation.play();
       this.animation_up.play();
-    } else if (this.liftkeyDown && this.floor_number > 0) {
+    } else if ((this.liftkeyDown || this.interactionKey) && this.floor_number == 1) {
       this.floor_number --;
+      this.button_press_in_animation.play();
       this.animation_down.play();
-    } else {
-      if (this.lift_text_blocked)
-        return;
-      document.getElementById("lift-text").style.display = "block";
-      this.lift_text_blocked = true;
-      setTimeout(() => {
-        document.getElementById("lift-text").style.display = "none";
-        this.lift_text_blocked = false;
-      }, 500);
+    }
+    // } else {
+    //   if (this.lift_text_blocked)
+    //     return;
+
+    //   this.lift_text_blocked = true;
+    //   setTimeout(() => {
+    //     this.lift_text_blocked = false;
+    //   }, 500);
+    // }
+  }
+
+  checkInteraction(camera, node) {
+    if (node.pickable || node.switchable) {
+      let isNear = this.isItemInCenterAndNear(camera, node);
+      if (isNear) {
+        if (node.pickable) {
+            document.getElementById("pickup-text").style.display = "block";
+            if (this.interactionKey || this.itemPickupKeyPressed) {
+              this.checkIfCorrectItemPickedUp(node);
+            }
+        } else if (node.switchable) {
+          document.getElementById("lift-text").style.display = "block";
+          this.checkLift(node);
+        }
+      }
     }
   }
 }

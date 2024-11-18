@@ -20,7 +20,7 @@ await renderer.initialize();
 
 const loader = new GLTFLoader();
 // await loader.load("scene/untitled4.gltf");
-await loader.load("scene/try1/scene06.gltf");
+await loader.load("scene/try1/scene11.gltf");
 
 const scene = loader.loadScene(loader.defaultScene);
 // console.log(scene);
@@ -35,6 +35,7 @@ camera.aabb = {
 
 // Define color array for light and initialize color index
 const colorArray = [
+  [255,255,255],
   [0, 0, 255],
   [0, 255, 0],
   [0, 255, 255],
@@ -44,13 +45,18 @@ const colorArray = [
 ];
 // TODO: fix it such that the lift goes down as well as the room
 // const pickable_items = ["Box.002", "Box.004", "Box.005", "Suzanne","Cone", "Box.003","Floor","Camera"];
-const pickable_items = ["Chair.002","Chair.003", "Chair.004"];
+const pickable_items = ["Chair.004"];
+const switch_items_names = ["Chair.003"];
+const switch_items = [];
 const nodes = [];
 const liftDoor = [];
 for (let i of pickable_items) {
   // nodes.push(loader.loadNode(i));
 }
-// liftDoor.push(loader.loadNode("Cube.002"));
+liftDoor.push(loader.loadNode("Chair.002"));
+for (let i of switch_items_names) {
+  switch_items.push(loader.loadNode(i));
+}
 const close_up_door_up = new LinearAnimator(liftDoor, {
   dx: 3.3,  
   dy: 0,
@@ -91,10 +97,27 @@ const animacija_down = new LinearAnimator(nodes, {
   duration: 1,
   loop: false,
 });
+const button_press_in_animation = new LinearAnimator(switch_items, {
+  dx: 0,  
+  dy: 0,
+  dz: 0.1,
+  startTime: 0,
+  duration: 0.1,
+  loop: false,
+});
+const button_press_out_animation = new LinearAnimator(switch_items, {
+  dx: 0,  
+  dy: 0,
+  dz: -0.1,
+  startTime: 0,
+  duration: 0.1,
+  loop: false,
+});
 close_up_door_up.setNextAnimation(animacija_down);
 close_up_door_down.setNextAnimation(animacija_up);
 animacija_up.setNextAnimation(open_up_door);
 animacija_down.setNextAnimation(open_up_door);
+button_press_in_animation.setNextAnimation(button_press_out_animation);
 scene.addComponent({
   update(t, dt) {
     // Only update if the animation is playing
@@ -113,11 +136,52 @@ scene.addComponent({
     if (animacija_down.playing) {
       animacija_down.update(t, dt);
     }
+    if (button_press_in_animation.playing) {
+      button_press_in_animation.update(t, dt);
+    }
+    if (button_press_out_animation.playing) {
+      button_press_out_animation.update(t, dt);
+    }
   },
 });
-const items_to_pick_up = ["Chair.002","Chair.003", "Chair.004"];
-document.getElementById("image-subject").src = `${items_to_pick_up[0]}.jpeg`;
+
+// Hotbar
+const how_many_items = 3;
+const items_to_pick_up = [];
+// document.getElementById("image-subject").src = `${items_to_pick_up[0]}.jpeg`;
 let colorIndex = 0;
+var hotbar = document.querySelector(".hotbar");
+function createHotbar(items) {
+  items.forEach((item) => {
+    const img = document.createElement("img");
+    img.src = `pickableItems/${item}.jpeg`;
+    img.alt = item;
+
+    const img_container = document.createElement("div");
+    img_container.classList.add("hotbar-item");
+    img_container.appendChild(img);
+
+    hotbar.appendChild(img_container);
+  });
+}
+function select_items_to_pick_up(how_many_items) {
+  var indexes = [];
+  for (let i=0; i<pickable_items.length; i++) {
+    indexes.push(i);
+  }
+  if (how_many_items > pickable_items.length) {
+    how_many_items = pickable_items.length;
+  }
+  while (indexes.length > how_many_items) {
+    const index = Math.floor(Math.random() * indexes.length);
+    indexes.splice(index, 1);
+  }
+  indexes.forEach((index) => {
+    items_to_pick_up.push(pickable_items[index]);
+  });
+  createHotbar(items_to_pick_up);
+}
+select_items_to_pick_up(how_many_items);
 
 const light = new Node();
 const LightTranslationComponent = new Transform({
@@ -135,32 +199,41 @@ light.draw = true; // Add `draw` property to control rendering
 scene.addChild(light);
 
 // Load other static nodes and set `draw` property
-[
-  "Chair.002","Chair.003", "Chair.004","Ceiling.Panels", "Plane.003", "Wall.Bar.Back.Overhang", "Wall.Bar.Back.Unfurnished", "Wall.Bar.Back.Unfurnished.001", "Wall.Bar.Back.Unfurnished.002",
+var static_nodes = [
+  "Chair.002","Chair.003", "Chair.004","Ceiling.Panels", "Plane", "Wall.Bar.Back.Overhang", "Wall.Bar.Back.Unfurnished", "Wall.Bar.Back.Unfurnished.001", "Wall.Bar.Back.Unfurnished.002",
   "Wall.Door.Overhang", "Bar_Stool.003",
    "Wall.Internal.001", "Wall.Internal.002", "Wall.Internal.003", "Wall.Internal.004", "Wall.Internal.005",
    "Wall.Internal.006", "Wall.Internal.007", "Wall.Internal.008", "Wall.Internal.009", "Wall.Internal.010",
    "Wall.Internal.011", "Wall.Internal.012", "Wall.Internal.013", "Wall.Internal.014", "Wall.Internal.015",
    "Wall.Internal.016", "Wall.Internal.017"
-].forEach((nodeName) => {
+]
+static_nodes.forEach((nodeName) => {
   const node = loader.loadNode(nodeName);
+<<<<<<< HEAD
   node.isStatic = true; // for colision detection
   node.draw = true; // da narise
   node.id = nodeName; // da imajo nek id
   node.pickable = true; // da lahko jih uzamemo
+=======
+  node.isStatic = true;
+  node.draw = true;
+  node.id = nodeName;
+  node.pickable = false;
 });
 
-// boudaries of the space are not pickable
-[
-  "Plane.003", "Wall.Bar.Back.Overhang", "Wall.Bar.Back.Unfurnished", "Wall.Bar.Back.Unfurnished.001", "Wall.Bar.Back.Unfurnished.002",
-  "Wall.Door.Overhang", "Bar_Stool.003",
-   "Wall.Internal.001", "Wall.Internal.002", "Wall.Internal.003", "Wall.Internal.004", "Wall.Internal.005",
-   "Wall.Internal.006", "Wall.Internal.007", "Wall.Internal.008", "Wall.Internal.009", "Wall.Internal.010",
-   "Wall.Internal.011", "Wall.Internal.012", "Wall.Internal.013", "Wall.Internal.014", "Wall.Internal.015",
-   "Wall.Internal.016", "Wall.Internal.017"
-].forEach((nodeName) => {
+pickable_items.forEach((nodeName) => {
   const node = loader.loadNode(nodeName);
+  node.pickable = true;
+>>>>>>> ba5953ddeadf35965d13fd55448939d5a44725c8
+});
+
+switch_items_names.forEach((nodeName) => {
+  const node = loader.loadNode(nodeName);
+<<<<<<< HEAD
   node.pickable = false; // vse dzide pa tleh
+=======
+  node.switchable = true;
+>>>>>>> ba5953ddeadf35965d13fd55448939d5a44725c8
 });
 
 const physics = new Physics(
@@ -169,7 +242,8 @@ const physics = new Physics(
   colorArray,
   lightComponent,
   close_up_door_up,
-  close_up_door_down
+  close_up_door_down,
+  button_press_in_animation
 );
 scene.traverse((node) => {
   const model = node.getComponentOfType(Model);
