@@ -19,25 +19,20 @@ const renderer = new Renderer(canvas);
 await renderer.initialize();
 
 const loader = new GLTFLoader();
-// await loader.load("scene/untitled4.gltf");
 await loader.load("scene/test03.gltf");
-// await loader.load("scene/starship_bar.gltf");
 
 const scene = loader.loadScene(loader.defaultScene);
-console.log(scene);
 const camera = loader.loadNode("Camera");
-console.log(camera);
 camera.addComponent(new FirstPersonController(camera, canvas));
-camera.isDynamic = true; // is_camera
+
+camera.isDynamic = true;
 camera.aabb = {
-  min: [-0.2, -0.8, -0.4],
-  max: [0.2, 0.8, 0.4],
+  min: [-0.2, -0.2, -0.2],
+  max: [0.2, 0.2, 0.2],
 };
-// console.log(camera);
 
 // Define color array for light and initialize color index
 const colorArray = [
-  [255, 255, 255],
   [0, 0, 255],
   [0, 255, 0],
   [0, 255, 255],
@@ -47,6 +42,8 @@ const colorArray = [
 ];
 // TODO: fix it such that the lift goes down as well as the room
 // const pickable_items = ["Box.002", "Box.004", "Box.005", "Suzanne","Cone", "Box.003","Floor","Camera"];
+const name_of_Lift_Doors = [];
+const Lift_sides = [];
 const pickable_items = [];
 const switch_items_names = [];
 const switch_items = [];
@@ -56,6 +53,15 @@ for (let i of pickable_items) {
   // nodes.push(loader.loadNode(i));
 }
 // liftDoor.push(loader.loadNode("Chair.002"));
+
+for (let i of name_of_Lift_Doors) {
+  liftDoor.push(loader.loadNode(i));
+}
+for (let i of Lift_sides) {
+  nodes.push(loader.loadNode(i));
+}
+
+
 for (let i of switch_items_names) {
   switch_items.push(loader.loadNode(i));
 }
@@ -244,6 +250,9 @@ scene.traverse((node) => {
   const model = node.getComponentOfType(Model);
   if (!model) return;
 
+  node.isStatic = true;
+  node.draw = true;
+
   model.primitives.forEach((primitive) => {
     console.log(primitive);
     const material = primitive.material;
@@ -257,8 +266,9 @@ scene.traverse((node) => {
   );
   var x = mergeAxisAlignedBoundingBoxes(boxes);
   node.aabb = x;
-  node.isStatic = false;
+  node.isStatic = true;
 });
+console.log(scene);
 function update(time, dt) {
   scene.traverse((node) => {
     for (const component of node.components) {

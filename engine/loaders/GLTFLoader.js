@@ -459,7 +459,10 @@ export class GLTFLoader {
         if (gltfSpec.mesh !== undefined) {
             node.addComponent(this.loadMesh(gltfSpec.mesh));
         }
-
+        if (gltfSpec.name) {
+            node.name = gltfSpec.name;
+        }
+        
         this.cache.set(gltfSpec, node);
         return node;
     }
