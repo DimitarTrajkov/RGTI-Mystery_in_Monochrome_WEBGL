@@ -164,16 +164,13 @@ export class Physics {
     });
 
     // Reset the flag after each update
-<<<<<<< HEAD
     this.shouldHideOnCollision = false; // E
     this.liftkeyUp = false; // arrowUp
     this.liftkeyDown = false; // arrowDown
-=======
     this.interactionKey = false;
     this.itemPickupKeyPressed = false;
     this.liftkeyUp = false;
     this.liftkeyDown = false;
->>>>>>> ba5953ddeadf35965d13fd55448939d5a44725c8
   }
 
   intervalIntersection(min1, max1, min2, max2) {
@@ -364,7 +361,6 @@ export class Physics {
     const angle = Math.acos(vec3.dot(forwardDir, toItemDir)) * (180 / Math.PI);
     // Check if item is within the specified angle threshold for "center"
     if (angle >= thresholdAngle) {
-<<<<<<< HEAD
       return;
     }
     // console.log(this.shouldHideOnCollision);
@@ -412,14 +408,6 @@ export class Physics {
           this.wrongMusic.pause();
         }, 500);
       }
-    } else {
-      document.getElementById("pickup-text").style.display = "block";
-      setTimeout(() => {
-        document.getElementById("pickup-text").style.display = "none";
-      }, 500);
-=======
-      return false;
->>>>>>> ba5953ddeadf35965d13fd55448939d5a44725c8
     }
     // console.log(this.itemPickupKeyPressed);
     return true;

@@ -209,31 +209,22 @@ var static_nodes = [
 ]
 static_nodes.forEach((nodeName) => {
   const node = loader.loadNode(nodeName);
-<<<<<<< HEAD
   node.isStatic = true; // for colision detection
   node.draw = true; // da narise
   node.id = nodeName; // da imajo nek id
   node.pickable = true; // da lahko jih uzamemo
-=======
-  node.isStatic = true;
-  node.draw = true;
-  node.id = nodeName;
-  node.pickable = false;
+
 });
 
 pickable_items.forEach((nodeName) => {
   const node = loader.loadNode(nodeName);
   node.pickable = true;
->>>>>>> ba5953ddeadf35965d13fd55448939d5a44725c8
 });
 
 switch_items_names.forEach((nodeName) => {
   const node = loader.loadNode(nodeName);
-<<<<<<< HEAD
   node.pickable = false; // vse dzide pa tleh
-=======
   node.switchable = true;
->>>>>>> ba5953ddeadf35965d13fd55448939d5a44725c8
 });
 
 const physics = new Physics(
