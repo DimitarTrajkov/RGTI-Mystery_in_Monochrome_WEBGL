@@ -1,18 +1,22 @@
 import { vec3, mat4 } from "glm";
 import { getGlobalModelMatrix } from "engine/core/SceneUtils.js";
-import { Transform } from "engine/core.js";
-
+import { Camera, Transform } from "engine/core.js";
+import { FirstPersonController } from "../engine/controllers/FirstPersonController.js";
 export class Physics {
   constructor(
     scene,
+    camera,
     items_to_pick_up,
     colorArray,
     lightComponent,
     animation_up,
     animation_down,
+    death_rotation,
+    death_translation,
     button_press_in_animation
   ) {
     this.scene = scene;
+    this.camera = camera;
     this.itemPickupKeyPressed = false;
     this.liftkeyUp = false;
     this.liftkeyDown = false;
@@ -22,14 +26,16 @@ export class Physics {
     this.colorArray = colorArray;
     this.colorIndex = 0;
     this.lightComponent = lightComponent;
-    this.timeLeft = 150;
+    this.timeLeft = 30;
     this.completed_the_game = false;
     this.floor_number = 0;
     this.animate_lift_doors = false;
+    this.death_rotation = death_rotation;
+    this.death_translation = death_translation;
     this.animation_up = animation_up;
     this.animation_down = animation_down;
     this.button_press_in_animation = button_press_in_animation;
-    
+
     // Load audio elements without autoplay
     this.backgroundMusic = document.getElementById("background-music");
     this.correctMusic = document.getElementById("correct-music");
@@ -126,19 +132,27 @@ export class Physics {
   }
 
   showGameOver() {
-    this.timerElement.style.display = "none";
+    // this.timerElement.style.display = "none";
+    // this.circleTimer.style.disply = "none";
+    document.getElementById("circle-timer-container").style.display = "none";
     if (this.completed_the_game) {
       this.gameWinElement.style.display = "block";
     } else {
-      document.getElementById(
-        "game-over-p"
-      ).innerText = `You found: ${this.picked_up_items_counter} of the ${this.items_to_pick_up.length}`;
-      this.gameOverElement.style.display = "block";
+      const controller = this.camera.getComponentOfType(FirstPersonController);
+      controller.active_controller = false;
+      this.death_rotation.play();
+      this.death_translation.play();
+      setTimeout(() => {
+        document.getElementById("game-over-p").innerText = `You found: ${this.picked_up_items_counter} of the ${this.items_to_pick_up.length}`;
+        this.gameOverElement.style.display = "block";
+      }, 1700);
     }
-    this.circleTimer.style.disply = "none";
-    document.getElementById("/-subject").style.display = "none";
-    document.getElementById("image-subject").style.display = "none";
-    this.timerElement.style.color = "black";
+    if (document.pointerLockElement) {
+      document.exitPointerLock();
+    }
+    // document.getElementById("/-subject").style.display = "none";
+    // document.getElementById("image-subject").style.display = "none";
+    // this.timerElement.style.color = "black";
     this.tickingMusic.muted = true;
     this.backgroundMusic.muted = true;
   }
@@ -335,7 +349,7 @@ export class Physics {
     cameraNode,
     itemNode,
     thresholdDistance = 15,
-    thresholdAngle = 5,
+    thresholdAngle = 5
   ) {
     const cameraPosition = cameraNode.getComponentOfType(Transform).translation;
     const itemPosition = itemNode.getComponentOfType(Transform).translation;
@@ -364,7 +378,8 @@ export class Physics {
       return;
     }
     // console.log(this.shouldHideOnCollision);
-    if (this.shouldHideOnCollision) { // tipko za pick up (E)
+    if (this.shouldHideOnCollision) {
+      // tipko za pick up (E)
       if (itemNode.id == this.items_to_pick_up[this.picked_up_items_counter]) {
         // next item
         this.picked_up_items_counter++;
@@ -426,11 +441,14 @@ export class Physics {
 
     if ((this.liftkeyUp || this.interactionKey) && this.floor_number == 0) {
       // get the animation
-      this.floor_number ++;
+      this.floor_number++;
       this.button_press_in_animation.play();
       this.animation_up.play();
-    } else if ((this.liftkeyDown || this.interactionKey) && this.floor_number == 1) {
-      this.floor_number --;
+    } else if (
+      (this.liftkeyDown || this.interactionKey) &&
+      this.floor_number == 1
+    ) {
+      this.floor_number--;
       this.button_press_in_animation.play();
       this.animation_down.play();
     }
@@ -450,10 +468,10 @@ export class Physics {
       let isNear = this.isItemInCenterAndNear(camera, node);
       if (isNear) {
         if (node.pickable) {
-            document.getElementById("pickup-text").style.display = "block";
-            if (this.interactionKey || this.itemPickupKeyPressed) {
-              this.checkIfCorrectItemPickedUp(node);
-            }
+          document.getElementById("pickup-text").style.display = "block";
+          if (this.interactionKey || this.itemPickupKeyPressed) {
+            this.checkIfCorrectItemPickedUp(node);
+          }
         } else if (node.switchable) {
           document.getElementById("lift-text").style.display = "block";
           this.checkLift(node);

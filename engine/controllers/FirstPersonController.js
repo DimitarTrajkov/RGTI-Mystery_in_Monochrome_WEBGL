@@ -26,6 +26,7 @@ export class FirstPersonController {
         this.maxSpeed = maxSpeed;
         this.decay = decay;
         this.pointerSensitivity = pointerSensitivity;
+        this.active_controller = true;
 
         this.initHandlers();
     }
@@ -52,6 +53,8 @@ export class FirstPersonController {
     }
 
     update(t, dt) {
+        if(!this.active_controller)
+            return;
         // Calculate forward and right vectors.
         const cos = Math.cos(this.yaw);
         const sin = Math.sin(this.yaw);

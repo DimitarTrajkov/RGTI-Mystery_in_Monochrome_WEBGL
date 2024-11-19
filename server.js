@@ -20,7 +20,7 @@ const extnameToContentType = {
 const server = http.createServer(async (req, res) => {
     // decode the URL to ensure that e.g. %20's are converted to spaces
     const url = decodeURIComponent(req.url);
-
+    console.log(url);
     // ensure that request path does not jump out of the project root
     const requestPath = path.join('/', url);
 
