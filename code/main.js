@@ -29,8 +29,8 @@ camera.addComponent(new FirstPersonController(camera, canvas));
 camera.isDynamic = true;
 let colorIndex = 0;
 camera.aabb = {
-  min: [-0.2, -0.9, -0.9],
-  max: [0.2, 0.9, 0.9],
+  min: [-0.2, -0.3, -0.3],
+  max: [0.2, 0.3, 0.3],
 };
 
 // Define color array for light and initialize color index
