@@ -44,7 +44,19 @@ const colorArray = [
 // const pickable_items = ["Box.002", "Box.004", "Box.005", "Suzanne","Cone", "Box.003","Floor","Camera"];
 const name_of_Lift_Doors = [];
 const Lift_sides = [];
-const pickable_items = [];
+const pickable_items = [
+  //"book closed",
+  "blue cleaner",
+  "lil duck",
+  // "Radio transistor", 
+  // "gun 1",
+  // "gun 2",
+  
+  //"bleach_bottle", //nema 
+  //"all_purpose_cleaner",
+  //cinamon rolls, 
+];
+//const pickable_items = [];
 const switch_items_names = [];
 const switch_items = [];
 const nodes = [];
@@ -162,7 +174,7 @@ var hotbar = document.querySelector(".hotbar");
 function createHotbar(items) {
   items.forEach((item) => {
     const img = document.createElement("img");
-    img.src = `pickableItems/${item}.jpeg`;
+    img.src = `pickableItems/${item}.jpg`;
     img.alt = item;
 
     const img_container = document.createElement("div");
