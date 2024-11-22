@@ -26,7 +26,7 @@ export class Physics {
     this.colorArray = colorArray;
     this.colorIndex = 0;
     this.lightComponent = lightComponent;
-    this.timeLeft = 300;
+    this.timeLeft = 45;
     this.completed_the_game = false;
     this.floor_number = 0;
     this.animate_lift_doors = false;
@@ -50,6 +50,8 @@ export class Physics {
     this.tickingMusic.pause();
 
     // all screens
+    this.eyelidTop = document.getElementById("eyelid-top");
+    this.eyelidBottom = document.getElementById("eyelid-bottom");
     this.timerElement = document.getElementById("timer");
     this.gameOverElement = document.getElementById("game-over");
     this.gameWinElement = document.getElementById("game-win");
@@ -122,6 +124,16 @@ export class Physics {
     const maxOffset = 376;
     const offset = maxOffset * (1 - this.timeLeft / 30);
     this.circleTimer.style.strokeDashoffset = offset;
+
+    if(this.timeLeft <= 10) {
+      // document.getElementById("full_screen").style.display = "block";
+      const eyelidCloseFactor = Math.max(0, (10 - this.timeLeft) / 10);
+      this.eyelidTop.style.opacity = 0.7 + 0.2*eyelidCloseFactor;
+      this.eyelidBottom.style.opacity = 0.7 + 0.2*eyelidCloseFactor;
+      // document.getElementById("full_screen").style.opacity = 0.7*eyelidCloseFactor;
+      this.eyelidTop.style.height = `${30 * eyelidCloseFactor*(Math.max(3 - (this.timeLeft+1.5)%3, (this.timeLeft+1.5)%3)-1.5)}vh`;
+      this.eyelidBottom.style.height = `${30 * eyelidCloseFactor*(Math.max(3 - (this.timeLeft+1.5)%3, (this.timeLeft+1.5)%3)-1.5)}vh`;
+    }
   }
 
   updateMusicSpeed() {
@@ -143,7 +155,9 @@ export class Physics {
       this.death_rotation.play();
       this.death_translation.play();
       setTimeout(() => {
-        document.getElementById("game-over-p").innerText = `You found: ${this.picked_up_items_counter} of the ${this.items_to_pick_up.length}`;
+        document.getElementById(
+          "game-over-p"
+        ).innerText = `You found: ${this.picked_up_items_counter} of the ${this.items_to_pick_up.length}`;
         this.gameOverElement.style.display = "block";
       }, 1700);
     }

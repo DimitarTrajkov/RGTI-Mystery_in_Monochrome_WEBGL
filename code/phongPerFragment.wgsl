@@ -196,7 +196,7 @@ fn fragment(input: FragmentInput) -> FragmentOutput {
     let V = normalize(camera.position - surfacePosition);
     let R = normalize(reflect(-L, N));
 
-    let ambientIntensity = 0.3;
+    let ambientIntensity = 0.99;
     let ambientLight = light.color * ambientIntensity;
 
 

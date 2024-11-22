@@ -20,7 +20,7 @@ const renderer = new Renderer(canvas);
 await renderer.initialize();
 
 const loader = new GLTFLoader();
-await loader.load("scene/scene01.gltf");
+await loader.load("scene/scene50.gltf");
 
 const scene = loader.loadScene(loader.defaultScene);
 const camera = loader.loadNode("Camera");
@@ -35,6 +35,7 @@ camera.aabb = {
 
 // Define color array for light and initialize color index
 const colorArray = [
+  [255, 255, 255],
   [100, 100, 255],
   [0, 255, 0],
   [0, 255, 255],
@@ -45,12 +46,12 @@ const colorArray = [
 
 const light = new Node();
 const LightTranslationComponent = new Transform({
-  translation: [1, 3, 0],
+  translation: [1, 1.5, 0],
 });
 light.addComponent(LightTranslationComponent);
 const lightComponent = new Light({
   color: colorArray[colorIndex], // Start with the first color
-  intensity: 2.5,
+  intensity: 0,
 });
 light.addComponent(lightComponent);
 light.draw = true; // Add `draw` property to control rendering
@@ -59,9 +60,12 @@ scene.addChild(light);
 
 
 // TODO: fix it such that the lift goes down as well as the room
-const name_Lift_sides = ["door part left", "door part right", "celing elevator", "Plane.006", "Plane.005", "elevator floor", "button place","Cube"]; // LIGHT IS PART OF THE LIFT      AND THE CAMERA!!!!
-const pickable_items = ["door part left"];
-const switch_items_names = ["button"];
+// const name_Lift_sides = ["door part left", "door part right", "celing elevator", "Plane.006", "Plane.005", "elevator floor", "button place","Cube"]; // LIGHT IS PART OF THE LIFT      AND THE CAMERA!!!!
+const name_Lift_sides = []; // LIGHT IS PART OF THE LIFT      AND THE CAMERA!!!!
+// const pickable_items = ["door part left"];
+const pickable_items = [];
+// const switch_items_names = ["button"];
+const switch_items_names = [];
 const switch_items = [];
 const Lift = [];
 

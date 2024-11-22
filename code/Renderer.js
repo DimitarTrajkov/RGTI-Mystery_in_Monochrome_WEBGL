@@ -723,7 +723,7 @@ export class Renderer extends BaseRenderer {
       material.baseTexture = { image: colorCanvas, sampler: {} };
     }
     if(!material.normalTexture){
-      console.log("Missing normal texture for material",material.baseTexture);
+      // console.log("Missing normal texture for material",material.baseTexture);
       material.normalTexture = { image: missingNormalBitmap, sampler: {} };
     }else{
       // console.log("YESIt has normal texture");

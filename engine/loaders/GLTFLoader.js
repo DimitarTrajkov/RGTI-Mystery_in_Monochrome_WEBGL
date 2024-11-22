@@ -339,7 +339,9 @@ export class GLTFLoader {
         const texcoords = accessors.TEXCOORD_0;
         const normal = accessors.NORMAL;
         const tangent = accessors.TANGENT;
-
+        // debug
+        // console.log("GLTF Loader:",texcoords);
+        // debug end
         const vertexCount = position.count;
         const vertices = [];
 

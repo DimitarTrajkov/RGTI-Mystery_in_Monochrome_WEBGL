@@ -491,3 +491,39 @@ svg {
 .grayscale {
   filter: grayscale(100%);
 }
+
+
+
+/* eyelid start */
+.eyelid {
+  z-index: 100;
+  position: absolute;
+  left: 0;
+  width: 100vw;
+  opacity: 0.8;
+}
+
+#eyelid-top {
+  top: 0;
+  height: 0vh;
+}
+
+#eyelid-bottom {
+  bottom: 0;
+  height: 0vh;
+}
+
+
+/* #full_screen{
+  display: none;
+  z-index: 99;
+  position: absolute;
+  top: 0;
+  left:0;
+  height: 100vh;
+  width: 100vw;
+  background-color: black;
+} */
+
+
+/* eyelid end */
