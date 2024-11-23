@@ -114,6 +114,7 @@ fn simulate(@builtin(global_invocation_id) global_invocation_id : vec3u) {
   // Age each particle. Fade out before vanishing.
   particle.lifetime = particle.lifetime - sim_params.deltaTime;
   particle.color.a = smoothstep(0.0, 0.5, particle.lifetime);
+  particle.color.a = 0.5;
 
   // If the lifetime has gone negative, then the particle is dead and should be
   // respawned.

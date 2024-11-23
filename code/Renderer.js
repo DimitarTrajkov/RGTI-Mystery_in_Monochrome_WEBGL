@@ -228,9 +228,9 @@ export class Renderer extends BaseRenderer {
                     {
                         format: 'bgra8unorm',
                         blend: {
-                            color: {
+                            color: { // finalColor = (srcFactor * srcColor) + (dstFactor * dstColor) where src is the color from this shader
                                 srcFactor: 'src-alpha',
-                                dstFactor: 'one',
+                                dstFactor: 'one-minus-src-alpha',
                                 operation: 'add',
                             },
                             alpha: {
@@ -564,7 +564,7 @@ export class Renderer extends BaseRenderer {
             colorAttachments: [
                 {
                     view: this.context.getCurrentTexture().createView(),
-                    clearValue: [0, 0, 0, 1],
+                    clearValue: [1, 1, 1, 1],
                     loadOp: 'load',
                     storeOp: 'store',
                 }
@@ -572,7 +572,7 @@ export class Renderer extends BaseRenderer {
             depthStencilAttachment: {
                 view: this.depthTexture.createView(),
                 depthClearValue: 1,
-                depthLoadOp: 'clear',
+                depthLoadOp: 'load',
                 depthStoreOp: 'store',
             },
         };
