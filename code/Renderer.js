@@ -118,9 +118,11 @@ export class Renderer extends BaseRenderer {
 
         const codePerFragment = await fetch('phongPerFragment.wgsl').then(response => response.text());
         const codePerVertex = await fetch('phongPerVertex.wgsl').then(response => response.text());
+        const codeForInstacing = await fetch('particle.wgsl').then(response => response.text());
 
         const modulePerFragment = this.device.createShaderModule({ code: codePerFragment });
         const modulePerVertex = this.device.createShaderModule({ code: codePerVertex });
+        const moduleForInstancing = this.device.createShaderModule({ code: codeForInstacing });
 
         this.cameraBindGroupLayout = this.device.createBindGroupLayout(cameraBindGroupLayout);
         this.lightBindGroupLayout = this.device.createBindGroupLayout(lightBindGroupLayout);
@@ -170,6 +172,95 @@ export class Renderer extends BaseRenderer {
             layout,
         });
 
+        this.numParticles = 10000;
+        this.particlePositionOffset = 0;
+        this.particleColorOffset = 4 * 4;
+        this.particleInstanceByteSize =
+        3 * 4 + // position
+        1 * 4 + // lifetime
+        4 * 4 + // color
+        3 * 4 + // velocity
+        1 * 4 + // padding
+        0;
+        this.pipelineForInstancing = await this.device.createRenderPipelineAsync({
+            layout: 'auto',
+            label: 'instacingPipeline',
+            vertex: {
+                module: moduleForInstancing,
+                buffers: [
+                    {
+                        // instanced particles buffer
+                        arrayStride: this.particleInstanceByteSize,
+                        stepMode: 'instance',
+                        attributes: [
+                            {
+                                // position
+                                shaderLocation: 0,
+                                offset: this.particlePositionOffset,
+                                format: 'float32x3',
+                            },
+                            {
+                                // color
+                                shaderLocation: 1,
+                                offset: this.particleColorOffset,
+                                format: 'float32x4',
+                            },
+                        ],
+                    },
+                    {
+                        // quad vertex buffer
+                        arrayStride: 2 * 4, // vec2f
+                        stepMode: 'vertex',
+                        attributes: [
+                            {
+                                // vertex positions
+                                shaderLocation: 2,
+                                offset: 0,
+                                format: 'float32x2',
+                            },
+                        ],
+                    },
+                ],
+            },
+            fragment: {
+                module: moduleForInstancing,
+                targets: [
+                    {
+                        format: 'bgra8unorm',
+                        blend: {
+                            color: {
+                                srcFactor: 'src-alpha',
+                                dstFactor: 'one',
+                                operation: 'add',
+                            },
+                            alpha: {
+                                srcFactor: 'zero',
+                                dstFactor: 'one',
+                                operation: 'add',
+                            },
+                        },
+                    },
+                ],
+            },
+            primitive: {
+                topology: 'triangle-list',
+            },
+        
+            depthStencil: {
+                format: 'depth24plus',
+                depthWriteEnabled: false,
+                depthCompare: 'less',
+            },
+        });
+
+        this.particleComputePipeline = await this.device.createComputePipeline({
+            layout: 'auto',
+            compute: {
+                module: moduleForInstancing,
+                entryPoint: 'simulate',
+            },
+        });
+
         this.recreateDepthTexture();
     }
 
@@ -215,6 +306,7 @@ export class Renderer extends BaseRenderer {
         });
 
         const cameraBindGroup = this.device.createBindGroup({
+            label: 'cameraBindGroup',
             layout: this.cameraBindGroupLayout,
             entries: [
                 { binding: 0, resource: { buffer: cameraUniformBuffer } },
@@ -237,6 +329,7 @@ export class Renderer extends BaseRenderer {
         });
 
         const lightBindGroup = this.device.createBindGroup({
+            label: 'lightBindGroup',
             layout: this.lightBindGroupLayout,
             entries: [
                 { binding: 0, resource: { buffer: lightUniformBuffer } },
@@ -307,7 +400,10 @@ export class Renderer extends BaseRenderer {
         return gpuObjects;
     }
 
+    counter = 0;
     render(scene, camera) {
+
+        const encoder = this.device.createCommandEncoder();
 
         if (Renderer.temp !== 0) { // Temporary fix: Teleport
             let matrix = camera.components[0].translation;
@@ -323,7 +419,6 @@ export class Renderer extends BaseRenderer {
             this.recreateDepthTexture();
         }
 
-        const encoder = this.device.createCommandEncoder();
         this.renderPass = encoder.beginRenderPass({
             colorAttachments: [
                 {
@@ -337,7 +432,7 @@ export class Renderer extends BaseRenderer {
                 view: this.depthTexture.createView(),
                 depthClearValue: 1,
                 depthLoadOp: 'clear',
-                depthStoreOp: 'discard',
+                depthStoreOp: 'store',
             },
         });
         this.renderPass.setPipeline(this.perFragment ? this.pipelinePerFragment : this.pipelinePerVertex);
@@ -364,8 +459,180 @@ export class Renderer extends BaseRenderer {
         this.renderPass.setBindGroup(1, lightBindGroup);
 
         this.renderNode(scene);
-
         this.renderPass.end();
+
+        // Particles ------------------------------------------------------------------------------------------------------
+        const quadVertexBuffer = this.device.createBuffer({
+            label: 'quadVertexBuffer',
+            size: 6 * 2 * 4, // 6x vec2f
+            usage: GPUBufferUsage.VERTEX,
+            mappedAtCreation: true,
+        });
+        // prettier-ignore
+        const vertexData = [
+            -1.0, -1.0, 
+            +1.0, -1.0, 
+            -1.0, +1.0, 
+            -1.0, +1.0, 
+            +1.0, -1.0, 
+            +1.0, +1.0,
+        ];
+        new Float32Array(quadVertexBuffer.getMappedRange()).set(vertexData);
+        quadVertexBuffer.unmap();
+
+        const particlesBuffer = this.device.createBuffer({
+            size: this.numParticles * this.particleInstanceByteSize,
+            usage: GPUBufferUsage.VERTEX | GPUBufferUsage.STORAGE | GPUBufferUsage.COPY_DST,
+        });
+
+        const floatsPerParticle = this.particleInstanceByteSize / 4; // 12 floats
+        if (this.counter === 0) {
+            const particleData = new Float32Array(this.numParticles * floatsPerParticle);
+
+            for (let i = 0; i < this.numParticles; i++) {
+                const baseIndex = i * floatsPerParticle;
+                // Position (vec3)
+                particleData.set([Math.random() * 10 - 5, Math.random() * 10 - 5, Math.random() * 10 - 5], baseIndex + 0);
+                // Lifetime (float)
+                particleData[baseIndex + 3] = Math.random() * 5 + 1000;
+                // Color (vec4)
+                particleData.set([Math.random(), Math.random(), Math.random(), 1.0], baseIndex + 4);
+                // Velocity (vec3)
+                particleData.set([0, 0, 0], baseIndex + 8);
+            }
+            this.device.queue.writeBuffer(particlesBuffer, 0, particleData);
+        }
+        this.counter = (this.counter + 1) % 100;
+
+
+        const simulationUBOBufferSize =
+        1 * 4 + // deltaTime
+        1 * 4 + // brightnessFactor
+        2 * 4 + // padding
+        4 * 4 + // seed
+        0;
+        const simulationUBOBuffer = this.device.createBuffer({
+            size: simulationUBOBufferSize,
+            usage: GPUBufferUsage.UNIFORM | GPUBufferUsage.COPY_DST,
+        });
+        const particleComputeBindGroup = this.device.createBindGroup({
+            label: 'particleComputeBindGroup',
+            layout: this.particleComputePipeline.getBindGroupLayout(0),
+            entries: [
+                {
+                    binding: 0,
+                    resource: {
+                        buffer: simulationUBOBuffer,
+                    },
+                },
+                {
+                    binding: 1,
+                    resource: {
+                        buffer: particlesBuffer,
+                        offset: 0,
+                        size: this.numParticles * this.particleInstanceByteSize,
+                    },
+                },
+            ],
+        });
+
+        const renderPassDescriptor = {
+            colorAttachments: [
+                {
+                    view: this.context.getCurrentTexture().createView(),
+                    clearValue: [0, 0, 0, 1],
+                    loadOp: 'clear',
+                    storeOp: 'store',
+                }
+            ],
+            depthStencilAttachment: {
+                view: this.depthTexture.createView(),
+                depthClearValue: 1,
+                depthLoadOp: 'clear',
+                depthStoreOp: 'store',
+            },
+        };
+
+        const particleUniformBufferSize =
+        4 * 4 * 4 + // modelViewProjectionMatrix : mat4x4f
+        3 * 4 + // right : vec3f
+        4 + // padding
+        3 * 4 + // up : vec3f
+        4 + // padding
+        0;
+        const particleUniformBuffer = this.device.createBuffer({
+            size: particleUniformBufferSize,
+            usage: GPUBufferUsage.UNIFORM | GPUBufferUsage.COPY_DST,
+        });
+
+        const uniformBindGroup = this.device.createBindGroup({
+            layout: this.pipelineForInstancing.getBindGroupLayout(0),
+            entries: [
+                {
+                    binding: 0,
+                    resource: {
+                        buffer: particleUniformBuffer,
+                    },
+                },
+            ],
+        });
+
+        this.device.queue.writeBuffer(
+            simulationUBOBuffer,
+            0,
+            new Float32Array([
+                0.04,
+                1.0,
+                0.0,
+                0.0, // padding
+                Math.random() * 100,
+                Math.random() * 100, // seed.xy
+                1 + Math.random(),
+                1 + Math.random(), // seed.zw
+            ])
+        );
+
+        const mvp = mat4.multiply(mat4.create(), projectionMatrix, viewMatrix);
+    
+        // prettier-ignore
+        this.device.queue.writeBuffer(
+            particleUniformBuffer,
+            0,
+            new Float32Array([
+                // modelViewProjectionMatrix
+                mvp[0], mvp[1], mvp[2], mvp[3],
+                mvp[4], mvp[5], mvp[6], mvp[7],
+                mvp[8], mvp[9], mvp[10], mvp[11],
+                mvp[12], mvp[13], mvp[14], mvp[15],
+            
+                viewMatrix[0], viewMatrix[4], viewMatrix[8], // right
+            
+                0, // padding
+            
+                viewMatrix[1], viewMatrix[5], viewMatrix[9], // up
+            
+                0, // padding
+            ])
+        );
+        
+        {
+            const passEncoder = encoder.beginComputePass();
+            passEncoder.setPipeline(this.particleComputePipeline);
+            passEncoder.setBindGroup(0, particleComputeBindGroup);
+            passEncoder.dispatchWorkgroups(Math.ceil(this.numParticles / 64));
+            passEncoder.end();
+        }
+        {
+            const passEncoder = encoder.beginRenderPass(renderPassDescriptor);
+            passEncoder.setPipeline(this.pipelineForInstancing);
+            passEncoder.setBindGroup(0, uniformBindGroup);
+            passEncoder.setVertexBuffer(0, particlesBuffer);
+            passEncoder.setVertexBuffer(1, quadVertexBuffer);
+            passEncoder.draw(6, this.numParticles, 0, 0);
+            passEncoder.end();
+        }
+        // End of particles
+
         this.device.queue.submit([encoder.finish()]);
     }
 
