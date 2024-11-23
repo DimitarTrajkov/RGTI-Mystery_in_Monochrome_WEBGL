@@ -261,6 +261,11 @@ export class Renderer extends BaseRenderer {
             },
         });
 
+        this.particlesBuffer = this.device.createBuffer({
+            size: this.numParticles * this.particleInstanceByteSize,
+            usage: GPUBufferUsage.VERTEX | GPUBufferUsage.STORAGE | GPUBufferUsage.COPY_DST,
+        });
+
         this.recreateDepthTexture();
     }
 
@@ -400,8 +405,18 @@ export class Renderer extends BaseRenderer {
         return gpuObjects;
     }
 
+    particlePosition = [0, 0, 0];
     counter = 0;
+    particleData = null;
+
     render(scene, camera) {
+
+        const floatsPerParticle = this.particleInstanceByteSize / 4; // 12 floats
+        if (this.counter === 5) {
+            this.particlePosition = mat4.getTranslation(vec3.create(), getGlobalModelMatrix(camera));
+            this.particleData = new Float32Array(this.numParticles * floatsPerParticle);
+        }
+        this.counter += 1;
 
         const encoder = this.device.createCommandEncoder();
 
@@ -480,30 +495,39 @@ export class Renderer extends BaseRenderer {
         new Float32Array(quadVertexBuffer.getMappedRange()).set(vertexData);
         quadVertexBuffer.unmap();
 
-        const particlesBuffer = this.device.createBuffer({
-            size: this.numParticles * this.particleInstanceByteSize,
-            usage: GPUBufferUsage.VERTEX | GPUBufferUsage.STORAGE | GPUBufferUsage.COPY_DST,
-        });
-
-        const floatsPerParticle = this.particleInstanceByteSize / 4; // 12 floats
-        if (this.counter === 0) {
-            const particleData = new Float32Array(this.numParticles * floatsPerParticle);
+        /*
+        this.particleInstanceByteSize =
+        3 * 4 + // position
+        1 * 4 + // lifetime
+        4 * 4 + // color
+        3 * 4 + // velocity
+        1 * 4 + // padding
+        0;
+        */
+        // const floatsPerParticle = this.particleInstanceByteSize / 4; // 12 floats
+        if (this.counter === 10) {
+            const particleData = this.particleData;
 
             for (let i = 0; i < this.numParticles; i++) {
                 const baseIndex = i * floatsPerParticle;
                 // Position (vec3)
-                particleData.set([Math.random() * 10 - 5, Math.random() * 10 - 5, Math.random() * 10 - 5], baseIndex + 0);
+                particleData.set(this.particlePosition, baseIndex);
                 // Lifetime (float)
                 particleData[baseIndex + 3] = Math.random() * 5 + 1000;
                 // Color (vec4)
-                particleData.set([Math.random(), Math.random(), Math.random(), 1.0], baseIndex + 4);
+                particleData.set([1.0, 0, 0, 1.0], baseIndex + 4);
                 // Velocity (vec3)
-                particleData.set([0, 0, 0], baseIndex + 8);
+                particleData.set([Math.random() * 0.1 - 0.05, Math.random() * 0.1 - 0.05, Math.random() * 0.1 - 0.05], baseIndex + 8);
             }
-            this.device.queue.writeBuffer(particlesBuffer, 0, particleData);
+            this.device.queue.writeBuffer(this.particlesBuffer, 0, particleData);
         }
-        this.counter = (this.counter + 1) % 100;
 
+        const simulationParams = {
+            simulate: true,
+            deltaTime: 0.04,
+            toneMappingMode: 'standard',
+            brightnessFactor: 1.0,
+        };
 
         const simulationUBOBufferSize =
         1 * 4 + // deltaTime
@@ -528,7 +552,7 @@ export class Renderer extends BaseRenderer {
                 {
                     binding: 1,
                     resource: {
-                        buffer: particlesBuffer,
+                        buffer: this.particlesBuffer,
                         offset: 0,
                         size: this.numParticles * this.particleInstanceByteSize,
                     },
@@ -541,7 +565,7 @@ export class Renderer extends BaseRenderer {
                 {
                     view: this.context.getCurrentTexture().createView(),
                     clearValue: [0, 0, 0, 1],
-                    loadOp: 'clear',
+                    loadOp: 'load',
                     storeOp: 'store',
                 }
             ],
@@ -592,6 +616,12 @@ export class Renderer extends BaseRenderer {
             ])
         );
 
+        // const mvp = mat4.getTranslation(vec3.create(), getGlobalModelMatrix(light));
+        // mat4.identity(view);
+        // mat4.translate(view, vec3.fromValues(0, 0, -3), view);
+        // mat4.rotateX(view, Math.PI * -0.2, view);
+        // mat4.multiply(projection, view, mvp);
+
         const mvp = mat4.multiply(mat4.create(), projectionMatrix, viewMatrix);
     
         // prettier-ignore
@@ -626,7 +656,7 @@ export class Renderer extends BaseRenderer {
             const passEncoder = encoder.beginRenderPass(renderPassDescriptor);
             passEncoder.setPipeline(this.pipelineForInstancing);
             passEncoder.setBindGroup(0, uniformBindGroup);
-            passEncoder.setVertexBuffer(0, particlesBuffer);
+            passEncoder.setVertexBuffer(0, this.particlesBuffer);
             passEncoder.setVertexBuffer(1, quadVertexBuffer);
             passEncoder.draw(6, this.numParticles, 0, 0);
             passEncoder.end();
