@@ -51,7 +51,7 @@ struct VertexOutput {
 @vertex
 fn vs_main(in : VertexInput) -> VertexOutput {
   var quad_pos = mat2x3f(render_params.right, render_params.up) * in.quad_pos;
-  var position = in.position + quad_pos * 0.01;
+  var position = in.position + quad_pos * 0.1;
   var out : VertexOutput;
   out.position = render_params.modelViewProjectionMatrix * vec4f(position, 1.0);
   out.color = in.color;
@@ -87,15 +87,29 @@ struct Particle {
   lifetime : f32,
   color    : vec4f,
   velocity : vec3f,
+  emitter_index : f32,
 }
 
 struct Particles {
   particles : array<Particle>,
 }
 
+struct Emitter {
+  position : vec3f,
+  lifetime : f32,
+  color : vec4f,
+  velocity : vec3f,
+  size : f32,
+  spread : f32,
+}
+
+struct Emitters {
+  emitters : array<Emitter>,
+}
+
 @binding(0) @group(0) var<uniform> sim_params : SimulationParams;
 @binding(1) @group(0) var<storage, read_write> data : Particles;
-// @binding(2) @group(0) var texture : texture_2d<f32>;
+@binding(2) @group(0) var<storage, read> emitters : Emitters;
 
 @compute @workgroup_size(64)
 fn simulate(@builtin(global_invocation_id) global_invocation_id : vec3u) {
@@ -104,6 +118,7 @@ fn simulate(@builtin(global_invocation_id) global_invocation_id : vec3u) {
   init_rand(idx, sim_params.seed);
 
   var particle = data.particles[idx];
+  var emitter = emitters.emitters[i32(particle.emitter_index)];
 
   // Apply gravity
   // particle.velocity.z = particle.velocity.z - sim_params.deltaTime * 0.5;
@@ -113,34 +128,24 @@ fn simulate(@builtin(global_invocation_id) global_invocation_id : vec3u) {
 
   // Age each particle. Fade out before vanishing.
   particle.lifetime = particle.lifetime - sim_params.deltaTime;
-  particle.color.a = smoothstep(0.0, 0.5, particle.lifetime);
-  particle.color.a = 0.5;
+  // particle.color.a = smoothstep(0.0, 0.5, particle.lifetime);
 
   // If the lifetime has gone negative, then the particle is dead and should be
   // respawned.
   if (particle.lifetime < 0.0) {
-    // Use the probability map to find where the particle should be spawned.
-    // Starting with the 1x1 mip level.
-    // var coord : vec2i;
-      // Load the probability value from the mip-level
-      // Generate a random number and using the probabilty values, pick the
-      // next texel in the next largest mip level:
-      //
-      // 0.0    probabilites.r    probabilites.g    probabilites.b   1.0
-      //  |              |              |              |              |
-      //  |   TOP-LEFT   |  TOP-RIGHT   | BOTTOM-LEFT  | BOTTOM_RIGHT |
-      //
-    // particle.position = vec3f(0, 0, 0)
-    // particle.color = textureLoad(texture, coord, 0);
-    // particle.color.r *= sim_params.brightnessFactor;
-    // particle.color.g *= sim_params.brightnessFactor;
-    // particle.color.b *= sim_params.brightnessFactor;
-    // particle.velocity.x = (rand() - 0.5) * 0.1;
-    // particle.velocity.y = (rand() - 0.5) * 0.1;
-    // particle.velocity.z = rand() * 0.3;
-    // particle.lifetime = 0.5 + rand() * 3.0;
-    particle.lifetime = 0.5 + rand() * 10.0;
-    particle.position = vec3f(0, 0, 0);
+    
+    // Lifetime +- 10%
+    particle.lifetime = emitter.lifetime + rand() * emitter.lifetime * 0.1;
+
+    // Randomly spawn within position +- size/2
+    particle.position.x = emitter.position.x + rand() * emitter.size - emitter.size * 0.5;
+    particle.position.y = emitter.position.y + rand() * emitter.size - emitter.size * 0.5;
+    particle.position.z = emitter.position.z + rand() * emitter.size - emitter.size * 0.5;
+
+    // Spread - Get direction of velocity, then make cone around it
+    particle.velocity = emitter.velocity + vec3f(rand() * emitter.spread, rand() * emitter.spread, rand() * emitter.spread) - 0.5 * emitter.spread;
+
+    particle.color = emitter.color + vec4f(rand() * 0.1, rand() * 0.1, rand() * 0.1, rand() * 0.1);
   }
 
   // Store the new particle value
