@@ -187,9 +187,8 @@ export class Physics {
 
             // Teleport hitbox to camera
             if (other.isCameraHitbox) { other.components[0].translation = node.components[0].translation;}
-
-            // check for colisions
-            if (!other.isCameraHitbox) {
+            else {
+              // check for colisions
               this.resolveCollision(node.hitbox, other);
             }
 
