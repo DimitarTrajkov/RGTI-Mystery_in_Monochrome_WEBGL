@@ -20,7 +20,7 @@ const renderer = new Renderer(canvas);
 await renderer.initialize();
 
 const loader = new GLTFLoader();
-await loader.load("scene/scene50.gltf");
+await loader.load("scene/scene53.gltf");
 
 const scene = loader.loadScene(loader.defaultScene);
 const camera = loader.loadNode("Camera");
@@ -29,13 +29,13 @@ camera.addComponent(new FirstPersonController(camera, canvas));
 camera.isDynamic = true;
 let colorIndex = 0;
 camera.aabb = {
-  min: [-0.2, -0.3, -0.3],
-  max: [0.2, 0.3, 0.3],
+  min: [-0.3, -1, -0.3],
+  max: [0.3, 1, 0.3],
 };
 
 // Define color array for light and initialize color index
 const colorArray = [
-  [255, 255, 255],
+  [30, 30, 30],
   [100, 100, 255],
   [0, 255, 0],
   [0, 255, 255],
@@ -60,13 +60,11 @@ scene.addChild(light);
 
 
 // TODO: fix it such that the lift goes down as well as the room
-// const name_Lift_sides = ["door part left", "door part right", "celing elevator", "Plane.006", "Plane.005", "elevator floor", "button place","Cube"]; // LIGHT IS PART OF THE LIFT      AND THE CAMERA!!!!
-const name_Lift_sides = []; // LIGHT IS PART OF THE LIFT      AND THE CAMERA!!!!
-// const pickable_items = ["door part left"];
-const pickable_items = [];
-// const switch_items_names = ["button"];
-const switch_items_names = [];
-const switch_items = [];
+const name_Lift_sides = ["button","button place","celing elevator", "door part left", "door part right", "doors frame. right", "doors frame.up","doors frameleft","elevator floor",
+  "elevator wall","elevator wall.001", "elevator wall.002" ]; // LIGHT IS PART OF THE LIFT      AND THE CAMERA!!!!
+const pickable_items = ["Envelope_1_Paper& Envelope_0","gun 2"];
+// const switch_items_names = [];
+// const switch_items = [];
 const Lift = [];
 
 for (let i of pickable_items) {
@@ -77,13 +75,10 @@ for (let i of pickable_items) {
 for (let i of name_Lift_sides) {
   Lift.push(loader.loadNode(i));
 }
+
 Lift.push(camera);
 Lift.push(light);
 
-for (let i of switch_items_names) {
-  switch_items.push(loader.loadNode(i));
-  Lift.push(loader.loadNode(i));
-}
 const death_animation_rotation = new RotateAnimator([camera], {
   dx: 0,
   dy: 0,
@@ -93,22 +88,22 @@ const death_animation_rotation = new RotateAnimator([camera], {
   loop: false,
 })
 const death_animation_translation = new LinearAnimator([camera], {
-  dx: 0, //-3
-  dy: 0, // -1
-  dz: 0,
-  startTime: 0,
-  duration: 1.5,
-  loop: false,
+dx: 0, //-3
+dy: 0, // -1
+dz: 0,
+startTime: 0,
+duration: 1.5,
+loop: false,
 })
 const floor_up = new LinearAnimator([], {dx: 0,dy: 0,dz: 0,duration: 0});
 const floor_down = new LinearAnimator([], {dx: 0,dy: 2,dz: 0,duration: 0  });
 
-const UP_left_door_close = new LinearAnimator([loader.loadNode("door part left")], {dx: 0,dy: 0,dz: -0.81,duration: 2});
-const DOWN_left_door_close = new LinearAnimator([loader.loadNode("door part left")], {dx: 0,dy: 0,dz: -0.81,duration: 2});
-const left_door_open = new LinearAnimator([loader.loadNode("door part left")], {dx: 0,dy: 0,dz: 0.81,duration: 2});
+const UP_left_door_close = new LinearAnimator([loader.loadNode("door part left")], {dx: 0.75,dy: 0,dz: 0,duration: 2});
+const DOWN_left_door_close = new LinearAnimator([loader.loadNode("door part left")], {dx: 0.75,dy: 0,dz: 0,duration: 2});
+const left_door_open = new LinearAnimator([loader.loadNode("door part left")], {dx: -0.75,dy: 0,dz: 0,duration: 2});
 
-const right_door_close = new LinearAnimator([loader.loadNode("door part right")], {dx: 0,dy: 0,dz: 0.81,duration: 2});
-const right_door_open = new LinearAnimator([loader.loadNode("door part right")], {dx: 0,dy: 0,dz: -0.81,duration: 2});
+const right_door_close = new LinearAnimator([loader.loadNode("door part right")], {dx: -0.75,dy: 0,dz: 0,duration: 2});
+const right_door_open = new LinearAnimator([loader.loadNode("door part right")], {dx: 0.75,dy: 0,dz: 0,duration: 2});
 const lift_up = new LinearAnimator(Lift, {dx: 0,dy: 3.4,dz: 0,duration: 1});
 const lift_down = new LinearAnimator(Lift, {dx: 0,dy: -3.4,dz: 0,duration: 1});
 
@@ -127,22 +122,8 @@ lift_down.addNextAnimation(right_door_open);
 
 
 
-const button_press_in_animation = new LinearAnimator(switch_items, {
-  dx: 0,
-  dy: 0,
-  dz: 0.1,
-  startTime: 0,
-  duration: 0.1,
-  loop: false,
-});
-const button_press_out_animation = new LinearAnimator(switch_items, {
-  dx: 0,
-  dy: 0,
-  dz: -0.1,
-  startTime: 0,
-  duration: 0.1,
-  loop: false,
-});
+const button_press_in_animation = new LinearAnimator([loader.loadNode("button")],  {dx: 0,dy: 0,dz: 0.1,startTime: 0,duration: 0.1});
+const button_press_out_animation = new LinearAnimator([loader.loadNode("button")], {dx: 0,dy: 0,dz: -0.1,startTime: 0,duration: 0.1});
 
 
 button_press_in_animation.addNextAnimation(button_press_out_animation);
@@ -199,7 +180,7 @@ var hotbar = document.querySelector(".hotbar");
 function createHotbar(items) {
   items.forEach((item) => {
     const img = document.createElement("img");
-    img.src = `pickableItems/${item}.jpeg`;
+    img.src = `pickableItems/${item}.jpg`;
     img.alt = item;
 
     const img_container = document.createElement("div");
@@ -255,11 +236,11 @@ pickable_items.forEach((nodeName) => {
   node.pickable = true;
 });
 
-switch_items_names.forEach((nodeName) => {
-  const node = loader.loadNode(nodeName);
-  node.pickable = false; // vse dzide pa tleh
-  node.switchable = true;
-});
+
+// 
+const node = loader.loadNode("button place");
+node.pickable = false; // vse dzide pa tleh
+node.switchable = true;
 
 const physics = new Physics(
   scene,

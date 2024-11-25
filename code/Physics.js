@@ -394,7 +394,7 @@ export class Physics {
     // console.log(this.shouldHideOnCollision);
     if (this.shouldHideOnCollision) {
       // tipko za pick up (E)
-      if (itemNode.id == this.items_to_pick_up[this.picked_up_items_counter]) {
+      if (itemNode.name == this.items_to_pick_up[this.picked_up_items_counter]) {
         // next item
         this.picked_up_items_counter++;
         itemNode.draw = false;
@@ -406,7 +406,7 @@ export class Physics {
         }
         document.getElementById("image-subject").src = `${
           this.items_to_pick_up[this.picked_up_items_counter]
-        }.jpeg`;
+        }.jpg`;
 
         this.updateLightColor();
 
