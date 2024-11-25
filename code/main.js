@@ -23,6 +23,8 @@ const loader = new GLTFLoader();
 await loader.load("https://sivanovska.github.io/WebGL-assets/test03.gltf");
 
 
+//await loader.load("http://localhost:3000/code/scene/test03.gltf");
+
 const scene = loader.loadScene(loader.defaultScene);
 const camera = loader.loadNode("Camera");
 camera.addComponent(new FirstPersonController(camera, canvas));
