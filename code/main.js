@@ -20,7 +20,9 @@ const renderer = new Renderer(canvas);
 await renderer.initialize();
 
 const loader = new GLTFLoader();
-await loader.load("scene/scene50.gltf");
+// await loader.load("scene/test03.gltf");
+await loader.load("https://sivanovska.github.io/WebGL-assets/test03.gltf");
+
 
 const scene = loader.loadScene(loader.defaultScene);
 const camera = loader.loadNode("Camera");
@@ -199,7 +201,7 @@ var hotbar = document.querySelector(".hotbar");
 function createHotbar(items) {
   items.forEach((item) => {
     const img = document.createElement("img");
-    img.src = `pickableItems/${item}.jpeg`;
+    img.src = `pickableItems/${item}.jpg`;
     img.alt = item;
 
     const img_container = document.createElement("div");

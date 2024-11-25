@@ -1,0 +1,19 @@
+{
+  "name": "rgti-mystery_in_monochrome_webgl",
+  "version": "1.0.0",
+  "description": "to start the game:\r RGTI-Mystery_in_Monochrome_WEBGL> node server.js",
+  "main": "server.js",
+  "directories": {
+    "lib": "lib"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "node server.js"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "express": "^4.21.1"
+  }
+}
