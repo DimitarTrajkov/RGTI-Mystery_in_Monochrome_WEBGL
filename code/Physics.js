@@ -26,7 +26,7 @@ export class Physics {
     this.colorArray = colorArray;
     this.colorIndex = 0;
     this.lightComponent = lightComponent;
-    this.timeLeft = 45;
+    this.timeLeft = 30;
     this.completed_the_game = false;
     this.floor_number = 0;
     this.animate_lift_doors = false;
@@ -44,10 +44,10 @@ export class Physics {
     this.lift_text_blocked = false;
 
     // so when you reset it the music stops before you press start again
-    this.backgroundMusic.pause();
-    this.correctMusic.pause();
-    this.wrongMusic.pause();
-    this.tickingMusic.pause();
+    // this.backgroundMusic.pause();
+    // this.correctMusic.pause();
+    // this.wrongMusic.pause();
+    // this.tickingMusic.pause();
 
     // all screens
     this.eyelidTop = document.getElementById("eyelid-top");
@@ -140,7 +140,7 @@ export class Physics {
     this.tickingMusic.playbackRate =
       0.5 + Math.max(((30 - this.timeLeft) / 30) * 1.5, 0);
     this.tickingMusic.volume =
-      0.05 + Math.max((30 - this.timeLeft) / 30, 0) ** 2 * 0.85;
+      0.15 + Math.max((30 - this.timeLeft) / 30, 0) ** 2 * 0.75;
   }
 
   showGameOver() {
