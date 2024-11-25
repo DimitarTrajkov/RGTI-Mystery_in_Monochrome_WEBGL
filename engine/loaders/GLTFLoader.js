@@ -71,7 +71,7 @@ export class GLTFLoader {
             const url = new URL(gltfSpec.uri, "https://sivanovska.github.io/WebGL-assets/");
             // const url = new URL(gltfSpec.uri, this.gltfUrl);
             const image = await this.fetchImage(url);
-            console.log("dela");
+            // console.log("dela");
             this.cache.set(gltfSpec, image);
             return image;
         } else {
@@ -92,11 +92,8 @@ export class GLTFLoader {
             return this.cache.get(gltfSpec);
         }
         const url = new URL(gltfSpec.uri, "https://sivanovska.github.io/WebGL-assets/");
-
         // const url = new URL(gltfSpec.uri, this.gltfUrl);
-        console.log("gltfSpec.uri",gltfSpec.uri);
-        console.log("this.gltfUrl",this.gltfUrl);
-        console.log("url od dek so fetcha", url);
+        
         const buffer = await this.fetchBuffer(url);
         this.cache.set(gltfSpec, buffer);
         return buffer;
