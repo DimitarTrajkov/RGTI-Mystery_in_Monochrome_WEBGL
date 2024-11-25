@@ -120,5 +120,9 @@ fn fragment(input: FragmentInput) -> FragmentOutput {
     output.color = pow(vec4(finalColor, 1), vec4(1 / 2.2));
     // output.color = vec4((transformedNormal * 0.5) + 0.5, 1.0);
 
+    //test if there are shadows
+    //output.color = vec4(shadowFactor, shadowFactor, shadowFactor, 1.0);
+
+
     return output;
 }
