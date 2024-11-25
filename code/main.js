@@ -15,6 +15,7 @@ import { Renderer } from "./Renderer.js";
 import { Light } from "./Light.js";
 import { Physics } from "./Physics.js";
 import { RotateAnimator } from "../engine/animators/RotateAnimator.js";
+import { GameLogic } from "./GameLogic.js";
 
 const canvas = document.querySelector("canvas");
 const renderer = new Renderer(canvas);
@@ -253,17 +254,22 @@ const node = loader.loadNode("button place");
 node.pickable = false; // vse dzide pa tleh
 node.switchable = true;
 
-const physics = new Physics(
-  scene,
+const gameLogic = new GameLogic(
   camera,
   items_to_pick_up,
-  colorArray,
-  lightComponent,
   floor_up,
   floor_down,
   death_animation_rotation,
   death_animation_translation,
-  button_press_in_animation
+  button_press_in_animation,
+  colorArray,
+  lightComponent,
+);
+
+const physics = new Physics(
+  scene,
+  camera,
+  gameLogic,
 );
 scene.traverse((node) => {
   const model = node.getComponentOfType(Model);
