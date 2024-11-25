@@ -57,6 +57,8 @@
 
 import { vec3, quat } from 'glm';
 import { Transform } from '../core/Transform.js';
+import * as easing from './EasingFunctions.js';
+
 export class RotateAnimator {
     constructor(nodes, {
         dx = 0,
@@ -64,6 +66,7 @@ export class RotateAnimator {
         dz = 0,
         duration = 1,
         loop = false,
+        easingFunction = easing.linear,
     } = {}) {
         this.nodes = nodes; // Array of nodes to animate
         this.deltaRotation = quat.fromEuler(quat.create(), dx, dy, dz); // Incremental rotation as quaternion
@@ -74,6 +77,7 @@ export class RotateAnimator {
         this.startRotations = new Map(); // Store start rotations for each node
         this.endRotations = new Map();   // Store end rotations for each node
         this.nextAnimation = null;       // Placeholder for follow-up animation
+        this.easingFunction = easingFunction;
     }
 
     play() {
@@ -109,7 +113,7 @@ export class RotateAnimator {
         }
 
         const elapsed = t - this.animationStartTime; // Calculate elapsed time
-        const linearInterpolation = elapsed / this.duration;
+        const linearInterpolation = this.easingFunction(elapsed / this.duration); // Apply easing function
         const clampedInterpolation = Math.min(Math.max(linearInterpolation, 0), 1);
         const loopedInterpolation = ((linearInterpolation % 1) + 1) % 1;
         const interpolation = this.loop ? loopedInterpolation : clampedInterpolation;

@@ -3,6 +3,7 @@ import { UpdateSystem } from "engine/systems/UpdateSystem.js";
 import { GLTFLoader } from "engine/loaders/GLTFLoader.js";
 import { FirstPersonController } from "engine/controllers/FirstPersonController.js";
 import { LinearAnimator } from "engine/animators/LinearAnimator.js";
+import * as easing from "engine/animators/easingFunctions.js";
 
 import { Camera, Model, Node, Transform } from "engine/core.js";
 import {
@@ -95,6 +96,7 @@ const death_animation_rotation = new RotateAnimator([camera], {
   startTime: 0,
   duration: 1.5,
   loop: false,
+  easingFunction: (t) => easing.poly(t, 10),
 })
 const death_animation_translation = new LinearAnimator([camera], {
 dx: 0, //-3
