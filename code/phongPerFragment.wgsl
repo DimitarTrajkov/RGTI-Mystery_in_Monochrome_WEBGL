@@ -33,10 +33,11 @@ struct CameraUniforms {
 }
 
 struct LightUniforms {
+    viewMatrix: mat4x4f,
+    projectionMatrix: mat4x4f,
     color: vec3f,
     position: vec3f,
     attenuation: vec3f,
-    lightViewProjectionMatrix: mat4x4f,
 }
 
 struct ModelUniforms {
@@ -53,15 +54,15 @@ struct MaterialUniforms {
 }
 
 @group(0) @binding(0) var<uniform> camera: CameraUniforms;
-@group(1) @binding(0) var<uniform> light: LightUniforms;
-@group(2) @binding(0) var<uniform> model: ModelUniforms;
+@group(1) @binding(0) var<uniform> model: ModelUniforms;
+@group(2) @binding(0) var<uniform> light: LightUniforms;
+@group(2) @binding(1) var shadowTexture: texture_depth_2d;
+@group(2) @binding(2) var shadowSampler: sampler_comparison;
 @group(3) @binding(0) var<uniform> material: MaterialUniforms;
 @group(3) @binding(1) var uBaseTexture: texture_2d<f32>;
 @group(3) @binding(2) var uBaseSampler: sampler;
 @group(3) @binding(3) var uNormalTexture: texture_2d<f32>;
 @group(3) @binding(4) var uNormalSampler: sampler;
-@group(1) @binding(0) var shadowMap: texture_depth_2d;
-@group(1) @binding(1) var shadowSampler: sampler_comparison;
 
 @vertex
 fn vertex(input: VertexInput) -> VertexOutput {
@@ -72,10 +73,7 @@ fn vertex(input: VertexInput) -> VertexOutput {
     output.normal = model.normalMatrix * input.normal;
     output.tangent = model.normalMatrix * input.tangent;
 
-    // Transform position to light space
-    let lightSpacePosition = light.lightViewProjectionMatrix * model.modelMatrix * vec4(input.position, 1);
-    output.shadowPosition = lightSpacePosition;
-
+    output.shadowPosition = light.projectionMatrix * light.viewMatrix * vec4(input.position, 1); // FIXED: Use input.position
     return output;
 }
 
@@ -83,18 +81,18 @@ fn vertex(input: VertexInput) -> VertexOutput {
 fn fragment(input: FragmentInput) -> FragmentOutput {
     var output: FragmentOutput;
 
-    // Compute shadow visibility
-    let shadowCoord = input.shadowPosition.xyz / input.shadowPosition.w;
-    let shadowVisibility = textureSampleCompare(shadowMap, shadowSampler, shadowCoord.xy, shadowCoord.z);
-
-    // Lighting calculations
     let baseColor = textureSample(uBaseTexture, uBaseSampler, input.texcoords);
     let normalColor = textureSample(uNormalTexture, uNormalSampler, input.texcoords);
     let scaledNormal = normalize((normalColor.xyz * 2 - 1) * vec3(vec2(material.normalFactor), 1));
 
+    let shadowPosition = input.shadowPosition.xyz / input.shadowPosition.w;
+    let shadowTexcoords = shadowPosition.xy * vec2(0.5, -0.5) + 0.5;
+    let shadowFactor = textureSampleCompare(shadowTexture, shadowSampler, shadowTexcoords.xy, shadowPosition.z - 0.002);
+
     let normal = normalize(input.normal);
     let tangent = normalize(input.tangent);
     let bitangent = normalize(cross(normal, tangent));
+
     let tangentMatrix = mat3x3(tangent, bitangent, normal);
     let transformedNormal = tangentMatrix * scaledNormal;
 
@@ -110,14 +108,17 @@ fn fragment(input: FragmentInput) -> FragmentOutput {
     let ambientIntensity = 0.99;
     let ambientLight = light.color * ambientIntensity;
 
+
     let lambert = max(dot(N, L), 0.0) * material.diffuse;
     let phong = pow(max(dot(V, R), 0.0), material.shininess) * material.specular;
 
-    let diffuseLight = lambert * attenuation * light.color * shadowVisibility;
-    let specularLight = phong * attenuation * light.color * shadowVisibility;
+    let diffuseLight = lambert * attenuation * light.color;
+    let specularLight = phong * attenuation * light.color;
 
-    let finalColor = baseColor.rgb * (diffuseLight + ambientLight) + specularLight;
+    let finalColor = (baseColor.rgb * (diffuseLight + ambientLight)  + specularLight)*shadowFactor;
+
     output.color = pow(vec4(finalColor, 1), vec4(1 / 2.2));
+    // output.color = vec4((transformedNormal * 0.5) + 0.5, 1.0);
 
     return output;
 }
