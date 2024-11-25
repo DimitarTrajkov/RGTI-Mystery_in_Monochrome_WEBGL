@@ -567,11 +567,13 @@ export class Renderer extends BaseRenderer {
 
     const codePerFragment = await fetch("phongPerFragment.wgsl").then((response) => response.text());
     // const codePerVertex = await fetch('phongPerVertex.wgsl').then(response => response.text());
+    const codeForInstacing = await fetch('particle.wgsl').then(response => response.text());
 
     const modulePerFragment = this.device.createShaderModule({
       code: codePerFragment,
     });
     // const modulePerVertex = this.device.createShaderModule({ code: codePerVertex });
+    const moduleForInstancing = this.device.createShaderModule({ code: codeForInstacing });
 
     this.cameraBindGroupLayout = this.device.createBindGroupLayout(
       cameraBindGroupLayout
@@ -610,8 +612,284 @@ export class Renderer extends BaseRenderer {
       layout,
     });
 
+    await this.initializeParticles(moduleForInstancing);
+
     this.recreateDepthTexture();
   }
+
+  createEmitters() {
+    // Create emitters here
+    this.addEmitter([
+      8.222803115844727,
+      1.1000001430511475,
+      4.47517204284668
+  ], 0.1, [1,0,0,1], [0, 20, 0], 0.1, 10, 10000);
+    this.addEmitter([0, 1, 1.5], 0.1, [0.7, 0.1, 0.1, 0.1], [0, 20, 0], 0.1, 10, 10000);
+
+    this.initializeEmitters();
+}
+
+addEmitter(position, lifetime, color, velocity, size, spread, numParticles) {
+    // Set the default values
+    this.numParticles += numParticles;
+    this.emitters.push({ position, lifetime, color, velocity, size, spread, numParticles });
+}
+
+initializeEmitters() {
+    this.emitterByteSize =
+    3 * 4 + // position
+    1 * 4 + // lifetime
+    4 * 4 + // color
+    3 * 4 + // velocity
+    1 * 4 + // size : f32,
+    1 * 4 + // spread : f32,
+    3 * 4 + // padding
+    0;
+
+    this.emittersBuffer = this.device.createBuffer({
+        label: 'emittersBuffer',
+        size: this.emitters.length * this.emitterByteSize,
+        usage: GPUBufferUsage.VERTEX | GPUBufferUsage.STORAGE | GPUBufferUsage.COPY_DST,
+    });
+
+    // Create the emitters buffer
+    const singleEmmiterSize = this.emitterByteSize/4;
+    const emitterData = new Float32Array(this.emitters.length * singleEmmiterSize);
+    for (let i = 0; i < this.emitters.length; i++) {
+        const baseIndex = i * singleEmmiterSize;
+        const emitter = this.emitters[i];
+        emitterData.set(emitter.position, baseIndex);
+        emitterData[baseIndex + 3] = emitter.lifetime;
+        emitterData.set(emitter.color, baseIndex + 4);
+        emitterData.set(emitter.velocity, baseIndex + 8);
+        emitterData[baseIndex + 11] = emitter.size;
+        emitterData[baseIndex + 12] = emitter.spread;
+    }
+    this.device.queue.writeBuffer(this.emittersBuffer, 0, emitterData);
+
+    // Create the particles buffer
+
+    this.particlesBuffer = this.device.createBuffer({
+        label: 'particlesBuffer',
+        size: this.numParticles * this.particleInstanceByteSize,
+        usage: GPUBufferUsage.VERTEX | GPUBufferUsage.STORAGE | GPUBufferUsage.COPY_DST,
+    });
+
+    /*
+    this.particleInstanceByteSize =
+    3 * 4 + // position
+    1 * 4 + // lifetime
+    4 * 4 + // color
+    3 * 4 + // velocity
+    1 * 4 + // emitter_index
+    0;
+    */
+    const floatsPerParticle = this.particleInstanceByteSize / 4; // 12 floats
+    
+    let particleData = new Float32Array(this.numParticles * floatsPerParticle);
+    let particlesBuffered = 0;
+    for (let i = 0; i < this.emitters.length; i++) {
+        const emitter = this.emitters[i];
+        for (let j = 0; j < emitter.numParticles; j++) {
+            const baseIndex = particlesBuffered * (floatsPerParticle);
+            particleData.set(emitter.position, baseIndex);
+            particleData.set(emitter.lifetime, baseIndex + 3);
+            particleData.set(emitter.color, baseIndex + 4);
+            particleData.set(emitter.velocity, baseIndex + 8);
+            particleData.set([i], baseIndex + 11);
+            particlesBuffered++;
+        }
+    }
+    this.device.queue.writeBuffer(this.particlesBuffer, 0, particleData);
+
+}
+
+async initializeParticles(moduleForInstancing) {
+    this.numParticles = 0;
+    this.particlePositionOffset = 0;
+    this.particleColorOffset = 4 * 4;
+    this.particleInstanceByteSize =
+    3 * 4 + // position
+    1 * 4 + // lifetime
+    4 * 4 + // color
+    3 * 4 + // velocity
+    1 * 4 + // emitter_index
+    0;
+    this.pipelineForInstancing = await this.device.createRenderPipelineAsync({
+        layout: 'auto',
+        label: 'instacingPipeline',
+        vertex: {
+            module: moduleForInstancing,
+            buffers: [
+                {
+                    // instanced particles buffer
+                    arrayStride: this.particleInstanceByteSize,
+                    stepMode: 'instance',
+                    attributes: [
+                        {
+                            // position
+                            shaderLocation: 0,
+                            offset: this.particlePositionOffset,
+                            format: 'float32x3',
+                        },
+                        {
+                            // color
+                            shaderLocation: 1,
+                            offset: this.particleColorOffset,
+                            format: 'float32x4',
+                        },
+                    ],
+                },
+                {
+                    // quad vertex buffer
+                    arrayStride: 2 * 4, // vec2f
+                    stepMode: 'vertex',
+                    attributes: [
+                        {
+                            // vertex positions
+                            shaderLocation: 2,
+                            offset: 0,
+                            format: 'float32x2',
+                        },
+                    ],
+                },
+            ],
+        },
+        fragment: {
+            module: moduleForInstancing,
+            targets: [
+                {
+                    format: 'bgra8unorm',
+                    blend: {
+                        color: { // finalColor = (srcFactor * srcColor) + (dstFactor * dstColor) where src is the color from this shader
+                            srcFactor: 'src-alpha',
+                            dstFactor: 'one-minus-src-alpha',
+                            operation: 'add',
+                        },
+                        alpha: {
+                            srcFactor: 'zero',
+                            dstFactor: 'one',
+                            operation: 'add',
+                        },
+                    },
+                },
+            ],
+        },
+        primitive: {
+            topology: 'triangle-list',
+        },
+    
+        depthStencil: {
+            format: 'depth24plus',
+            depthWriteEnabled: false,
+            depthCompare: 'less',
+        },
+    });
+
+    this.particleComputePipeline = await this.device.createComputePipeline({
+        layout: 'auto',
+        compute: {
+            module: moduleForInstancing,
+            entryPoint: 'simulate',
+        },
+    });
+
+
+    this.emitters = [];
+    this.createEmitters();
+
+    // Quad vertex buffer - Define shape of the particles -------------------------------------------------
+    this.quadVertexBuffer = this.device.createBuffer({
+        label: 'quadVertexBuffer',
+        size: 6 * 2 * 4, // 6x vec2f
+        usage: GPUBufferUsage.VERTEX,
+        mappedAtCreation: true,
+    });
+    // prettier-ignore
+    const vertexData = [
+        -1.0, -1.0, 
+        +1.0, -1.0, 
+        -1.0, +1.0, 
+        -1.0, +1.0, 
+        +1.0, -1.0, 
+        +1.0, +1.0,
+    ];
+    new Float32Array(this.quadVertexBuffer.getMappedRange()).set(vertexData);
+    this.quadVertexBuffer.unmap();
+
+    // Simulation UBO buffer - How simulation should run ---------------------------------------------------
+    // const simulationParams = {
+    //     simulate: true,
+    //     deltaTime: 0.04,
+    //     toneMappingMode: 'standard',
+    //     brightnessFactor: 1.0,
+    // };
+
+    const simulationUBOBufferSize =
+    1 * 4 + // deltaTime
+    1 * 4 + // brightnessFactor
+    2 * 4 + // padding
+    4 * 4 + // seed
+    0;
+    this.simulationUBOBuffer = this.device.createBuffer({
+        size: simulationUBOBufferSize,
+        usage: GPUBufferUsage.UNIFORM | GPUBufferUsage.COPY_DST,
+    });
+    this.particleComputeBindGroup = this.device.createBindGroup({
+        label: 'particleComputeBindGroup',
+        layout: this.particleComputePipeline.getBindGroupLayout(0),
+        entries: [
+            {
+                binding: 0,
+                resource: {
+                    buffer: this.simulationUBOBuffer,
+                },
+            },
+            {
+                binding: 1,
+                resource: {
+                    buffer: this.particlesBuffer,
+                    offset: 0,
+                    size: this.numParticles * this.particleInstanceByteSize,
+                },
+            },
+            {
+                binding: 2,
+                resource: {
+                    buffer: this.emittersBuffer,
+                    offset: 0,
+                    size: this.emitters.length * this.emitterByteSize,
+                },
+            },
+        ],
+    });
+
+    // For putting particles in 3D space -------------------------------------------------------------------
+    const particleUniformBufferSize =
+    4 * 4 * 4 + // modelViewProjectionMatrix : mat4x4f
+    3 * 4 + // right : vec3f
+    4 + // padding
+    3 * 4 + // up : vec3f
+    4 + // padding
+    0;
+    this.particleUniformBuffer = this.device.createBuffer({
+        size: particleUniformBufferSize,
+        usage: GPUBufferUsage.UNIFORM | GPUBufferUsage.COPY_DST,
+    });
+
+    this.uniformBindGroup = this.device.createBindGroup({
+        label: 'uniformBindGroup',
+        layout: this.pipelineForInstancing.getBindGroupLayout(0),
+        entries: [
+            {
+                binding: 0,
+                resource: {
+                    buffer: this.particleUniformBuffer,
+                },
+            },
+        ],
+    });
+}
 
   recreateDepthTexture() {
     this.depthTexture?.destroy();
@@ -753,6 +1031,84 @@ export class Renderer extends BaseRenderer {
     return gpuObjects;
   }
 
+  previousTime = performance.now();
+    renderParticles(encoder, projectionMatrix, viewMatrix) {
+        
+        const renderPassDescriptor = {
+            colorAttachments: [
+                {
+                    view: this.context.getCurrentTexture().createView(),
+                    clearValue: [0, 0, 0, 1],
+                    loadOp: 'load',
+                    storeOp: 'store',
+                }
+            ],
+            depthStencilAttachment: {
+                view: this.depthTexture.createView(),
+                depthClearValue: 1,
+                depthLoadOp: 'load',
+                depthStoreOp: 'store',
+            },
+        };
+
+        const currentTime = performance.now();
+        const deltaTime = (currentTime - this.previousTime) / 1000; // Convert to seconds
+        this.previousTime = currentTime;
+
+        this.device.queue.writeBuffer(
+            this.simulationUBOBuffer,
+            0,
+            new Float32Array([
+                deltaTime, // Delta time
+                1.0, // Brightness factor
+                0.0,
+                0.0, // padding
+                Math.random() * 100,
+                Math.random() * 100, // seed.xy
+                1 + Math.random(),
+                1 + Math.random(), // seed.zw
+            ])
+        );
+
+        const mvp = mat4.multiply(mat4.create(), projectionMatrix, viewMatrix);
+        this.device.queue.writeBuffer(
+            this.particleUniformBuffer,
+            0,
+            new Float32Array([
+                // modelViewProjectionMatrix
+                mvp[0], mvp[1], mvp[2], mvp[3],
+                mvp[4], mvp[5], mvp[6], mvp[7],
+                mvp[8], mvp[9], mvp[10], mvp[11],
+                mvp[12], mvp[13], mvp[14], mvp[15],
+            
+                viewMatrix[0], viewMatrix[4], viewMatrix[8], // right
+            
+                0, // padding
+            
+                viewMatrix[1], viewMatrix[5], viewMatrix[9], // up
+            
+                0, // padding
+            ])
+        );
+        
+        {
+            const passEncoder = encoder.beginComputePass();
+            passEncoder.setPipeline(this.particleComputePipeline);
+            passEncoder.setBindGroup(0, this.particleComputeBindGroup);
+            passEncoder.dispatchWorkgroups(Math.ceil(this.numParticles / 64));
+            passEncoder.end();
+        }
+        {
+            const passEncoder = encoder.beginRenderPass(renderPassDescriptor);
+            passEncoder.setPipeline(this.pipelineForInstancing);
+            passEncoder.setBindGroup(0, this.uniformBindGroup);
+            passEncoder.setVertexBuffer(0, this.particlesBuffer);
+            passEncoder.setVertexBuffer(1, this.quadVertexBuffer);
+            passEncoder.draw(6, this.numParticles, 0, 0);
+            passEncoder.end();
+        }
+    }
+
   render(scene, camera) {
     if (Renderer.temp !== 0) {
       // Temporary fix: Teleport
@@ -775,18 +1131,18 @@ export class Renderer extends BaseRenderer {
     const encoder = this.device.createCommandEncoder();
     this.renderPass = encoder.beginRenderPass({
       colorAttachments: [
-        {
-          view: this.context.getCurrentTexture().createView(),
-          clearValue: [1, 1, 1, 1],
-          loadOp: "clear",
-          storeOp: "store",
-        },
+          {
+              view: this.context.getCurrentTexture().createView(),
+              clearValue: [1, 1, 1, 1],
+              loadOp: 'clear',
+              storeOp: 'store',
+          }
       ],
       depthStencilAttachment: {
-        view: this.depthTexture.createView(),
-        depthClearValue: 1,
-        depthLoadOp: "clear",
-        depthStoreOp: "discard",
+          view: this.depthTexture.createView(),
+          depthClearValue: 1,
+          depthLoadOp: 'clear',
+          depthStoreOp: 'store',
       },
     });
     this.renderPass.setPipeline(this.pipelinePerFragment);
@@ -823,6 +1179,11 @@ export class Renderer extends BaseRenderer {
     this.renderNode(scene);
 
     this.renderPass.end();
+
+    // Particles ------------------------------------------------------------------------------------------------------
+    this.renderParticles(encoder, projectionMatrix, viewMatrix);
+    // End of particles
+
     this.device.queue.submit([encoder.finish()]);
   }
 

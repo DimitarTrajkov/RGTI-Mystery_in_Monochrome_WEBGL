@@ -148,7 +148,9 @@ export class Physics {
     // this.circleTimer.style.disply = "none";
     document.getElementById("circle-timer-container").style.display = "none";
     if (this.completed_the_game) {
-      this.gameWinElement.style.display = "block";
+      setTimeout(() => {
+        this.gameWinElement.style.display = "block"; // delay of 0.2 seconds
+      }, 200); 
     } else {
       const controller = this.camera.getComponentOfType(FirstPersonController);
       controller.active_controller = false;
@@ -178,11 +180,21 @@ export class Physics {
       // console.log(node.id, node.aabb);
       // if camera
       if (node.isDynamic) {
+        console.log(node.components[0].translation);
         this.scene.traverse((other) => {
           // if camera != camera and colision detection
           if (node !== other && other.isStatic) {
-            // check for colisions
-            this.resolveCollision(node, other);
+
+            // Teleport hitbox to camera
+            if (other.isCameraHitbox) { other.components[0].translation = node.components[0].translation;}
+            else {
+              // check for colisions
+              this.resolveCollision(node.hitbox, other);
+            }
+
+            // Teleport camera to hitbox
+            if (other.isCameraHitbox) { node.components[0].translation = other.components[0].translation; }
+
             // check for interaction
             this.checkInteraction(node, other);
           }
@@ -303,6 +315,30 @@ export class Physics {
     this.lightComponent.color = this.colorArray[this.colorIndex];
   }
 
+shrinkItem(itemNode, duration = 0.2) {
+  const transform = itemNode.getComponentOfType(Transform);
+  if (!transform) return;
+
+  const initialScale = vec3.clone(transform.scale);
+  const targetScale = vec3.fromValues(0, 0, 0); 
+  
+  const startTime = performance.now(); 
+  const update = () => {
+    const elapsedTime = (performance.now() - startTime) / 1000;
+    const lerpFactor = Math.min(elapsedTime / duration, 1); 
+    const newScale = vec3.lerp(vec3.create(), initialScale, targetScale, lerpFactor);
+
+    transform.scale = newScale;
+
+    if (lerpFactor < 1) {
+      requestAnimationFrame(update);
+    } else {
+      itemNode.draw = false; 
+    }
+  };
+  update();
+}
+
   wrongItemPickedUp() {
     // console.log(itemNode.id);
     // logic for wrong pick
@@ -321,8 +357,10 @@ export class Physics {
 
   correctItemPickedUp(itemNode) {
     this.picked_up_items_counter++;
-    itemNode.draw = false;
-    itemNode.isStatic = false;
+    this.shrinkItem(itemNode); // Shrink the item with a 1-second duration
+
+    // itemNode.draw = false;
+    // itemNode.isStatic = false;
     if (this.picked_up_items_counter == this.items_to_pick_up.length) {
       this.completed_the_game = true;
       this.showGameOver();
@@ -347,7 +385,7 @@ export class Physics {
   checkIfCorrectItemPickedUp(itemNode) {
     // Check if the item picked up is any of the items needed to be picked up
     for (let i = 0; i < this.items_to_pick_up.length; i++) {
-      if (itemNode.id == this.items_to_pick_up[i]) {
+      if (itemNode.name == this.items_to_pick_up[i]) {
         document.querySelectorAll(".hotbar-item")[i].classList.add("grayscale");
 
         this.correctItemPickedUp(itemNode);
