@@ -37,13 +37,8 @@ export class GameLogic {
         this.timeLeft = this.startingTime;
         this.completed_the_game = false;
 
-        this.itemPickupKeyPressed = false;
-        this.liftkeyUp = false;
-        this.liftkeyDown = false;
-        this.interactionKey = false;
         this.picked_up_items_counter = 0;
 
-        this.floor_number = 0;
         this.animate_lift_doors = false;
 
         // all screens
@@ -71,18 +66,6 @@ export class GameLogic {
             location.reload();
         };
 
-        // letter P for pick up
-        document.addEventListener("keydown", (event) => {
-            if (event.key === "p" || event.key === "P") {
-                this.itemPickupKeyPressed = true;
-            } else if (event.key === "ArrowUp") {
-                this.liftkeyUp = true;
-            } else if (event.key === "ArrowDown") {
-                this.liftkeyDown = true;
-            } else if (event.key === "e" || event.key === "E") {
-                this.interactionKey = true;
-            }
-        });
     }
 
     startGame() {
@@ -267,123 +250,5 @@ export class GameLogic {
         }
 
         this.wrongItemPickedUp();
-    }
-
-    // finding if subjects are near each other
-    isItemInCenterAndNear(
-        cameraNode,
-        itemNode,
-        thresholdDistance = 15,
-        thresholdAngle = 5
-    ) {
-        const cameraPosition = cameraNode.getComponentOfType(Transform).translation;
-        const itemPosition = itemNode.getComponentOfType(Transform).translation;
-
-        const distance = vec3.distance(cameraPosition, itemPosition);
-        if (distance > thresholdDistance) {
-            return false;
-        }
-
-        // Calculate direction vector from camera to item
-        const toItemDir = vec3.sub(vec3.create(), itemPosition, cameraPosition);
-        vec3.normalize(toItemDir, toItemDir);
-
-        // Get camera's forward direction
-        const forwardDir = vec3.transformQuat(
-            vec3.create(),
-            [0, 0, -1],
-            cameraNode.getComponentOfType(Transform).rotation
-        );
-        vec3.normalize(forwardDir, forwardDir);
-
-        // Calculate the angle between camera forward direction and direction to item
-        const angle = Math.acos(vec3.dot(forwardDir, toItemDir)) * (180 / Math.PI);
-        // Check if item is within the specified angle threshold for "center"
-        if (angle >= thresholdAngle) {
-            return;
-        }
-        // console.log(this.shouldHideOnCollision);
-        if (this.shouldHideOnCollision) {
-            // tipko za pick up (E)
-            if (itemNode.name == this.items_to_pick_up[this.picked_up_items_counter]) {
-                // next item
-                this.picked_up_items_counter++;
-                itemNode.draw = false;
-                itemNode.isStatic = false;
-                if (this.picked_up_items_counter == this.items_to_pick_up.length) {
-                    this.completed_the_game = true;
-                    this.showGameOver();
-                    return;
-                }
-                document.getElementById("image-subject").src = `${this.items_to_pick_up[this.picked_up_items_counter]
-                    }.jpg`;
-
-                this.updateLightColor();
-
-                // logic for correct pick
-                this.timeLeft += 3;
-                this.timerElement.style.color = "green";
-                this.circleTimer.style.stroke = "green";
-                this.correctMusic.play();
-                document.getElementById("correct-item").style.display = "block";
-                setTimeout(() => {
-                    document.getElementById("correct-item").style.display = "none";
-                    this.timerElement.style.color = "black";
-                    this.circleTimer.style.stroke = "black";
-                    this.correctMusic.pause();
-                }, 500);
-            } else {
-                // console.log(itemNode.id);
-                // logic for wrong pick
-                this.timeLeft -= 1;
-                this.timerElement.style.color = "red";
-                this.circleTimer.style.stroke = "red";
-                this.wrongMusic.play();
-                document.getElementById("wrong-item").style.display = "block";
-                setTimeout(() => {
-                    document.getElementById("wrong-item").style.display = "none";
-                    this.timerElement.style.color = "black";
-                    this.circleTimer.style.stroke = "black";
-                    this.wrongMusic.pause();
-                }, 500);
-            }
-        }
-        // console.log(this.itemPickupKeyPressed);
-        return true;
-    }
-    checkLift(node) {
-        // location of the camera must be in the lift
-        // 1 is the highest floor
-
-        if ((this.liftkeyUp || this.interactionKey) && this.floor_number == 0) {
-            // get the animation
-            this.floor_number++;
-            this.button_press_in_animation.play();
-            this.animation_up.play();
-        } else if (
-            (this.liftkeyDown || this.interactionKey) &&
-            this.floor_number == 1
-        ) {
-            this.floor_number--;
-            this.button_press_in_animation.play();
-            this.animation_down.play();
-        }
-    }
-
-    checkInteraction(camera, node) {
-        if (node.pickable || node.switchable) {
-            let isNear = this.isItemInCenterAndNear(camera, node);
-            if (isNear) {
-                if (node.pickable) {
-                    document.getElementById("pickup-text").style.display = "block";
-                    if (this.interactionKey || this.itemPickupKeyPressed) {
-                        this.checkIfCorrectItemPickedUp(node);
-                    }
-                } else if (node.switchable) {
-                    document.getElementById("lift-text").style.display = "block";
-                    this.checkLift(node);
-                }
-            }
-        }
     }
 }

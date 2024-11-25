@@ -9,13 +9,32 @@ export class Physics {
     gameLogic,
   ) {
 
-    
+
     this.scene = scene;
     this.camera = camera;
-    
+
     this.gameLogic = gameLogic;
+
+    this.itemPickupKeyPressed = false;
+    this.liftkeyUp = false;
+    this.liftkeyDown = false;
+    this.interactionKey = false;
+    this.floor_number = 0;
+
+    // letter P for pick up
+    document.addEventListener("keydown", (event) => {
+      if (event.key === "p" || event.key === "P") {
+        this.itemPickupKeyPressed = true;
+      } else if (event.key === "ArrowUp") {
+        this.liftkeyUp = true;
+      } else if (event.key === "ArrowDown") {
+        this.liftkeyDown = true;
+      } else if (event.key === "e" || event.key === "E") {
+        this.interactionKey = true;
+      }
+    });
   }
-  
+
 
   update(t, dt) {
     // Remove all text, since it will be re-added if needed before frame update
@@ -30,7 +49,7 @@ export class Physics {
           if (node !== other && other.isStatic) {
 
             // Teleport hitbox to camera
-            if (other.isCameraHitbox) { other.components[0].translation = node.components[0].translation;}
+            if (other.isCameraHitbox) { other.components[0].translation = node.components[0].translation; }
             else {
               // check for colisions
               this.resolveCollision(node.hitbox, other);
@@ -40,7 +59,7 @@ export class Physics {
             if (other.isCameraHitbox) { node.components[0].translation = other.components[0].translation; }
 
             // check for interaction
-            this.gameLogic.checkInteraction(node, other);
+            this.checkInteraction(node, other);
           }
         });
       }
@@ -48,12 +67,10 @@ export class Physics {
 
     // Reset the flag after each update
     this.gameLogic.shouldHideOnCollision = false; // E
-    this.gameLogic.liftkeyUp = false; // arrowUp
-    this.gameLogic.liftkeyDown = false; // arrowDown
-    this.gameLogic.interactionKey = false;
-    this.gameLogic.itemPickupKeyPressed = false;
-    this.gameLogic.liftkeyUp = false;
-    this.gameLogic.liftkeyDown = false;
+    this.liftkeyUp = false; // arrowUp
+    this.liftkeyDown = false; // arrowDown
+    this.interactionKey = false;
+    this.itemPickupKeyPressed = false;
   }
 
   intervalIntersection(min1, max1, min2, max2) {
@@ -151,5 +168,77 @@ export class Physics {
     }
 
     vec3.add(transform.translation, transform.translation, minDirection);
+  }
+
+  // finding if subjects are near each other
+  isItemInCenterAndNear(
+    cameraNode,
+    itemNode,
+    thresholdDistance = 15,
+    thresholdAngle = 5
+  ) {
+    const cameraPosition = cameraNode.getComponentOfType(Transform).translation;
+    const itemPosition = itemNode.getComponentOfType(Transform).translation;
+
+    const distance = vec3.distance(cameraPosition, itemPosition);
+    if (distance > thresholdDistance) {
+      return false;
+    }
+
+    // Calculate direction vector from camera to item
+    const toItemDir = vec3.sub(vec3.create(), itemPosition, cameraPosition);
+    vec3.normalize(toItemDir, toItemDir);
+
+    // Get camera's forward direction
+    const forwardDir = vec3.transformQuat(
+      vec3.create(),
+      [0, 0, -1],
+      cameraNode.getComponentOfType(Transform).rotation
+    );
+    vec3.normalize(forwardDir, forwardDir);
+
+    // Calculate the angle between camera forward direction and direction to item
+    const angle = Math.acos(vec3.dot(forwardDir, toItemDir)) * (180 / Math.PI);
+    // Check if item is within the specified angle threshold for "center"
+    if (angle >= thresholdAngle) {
+      return false;
+    }
+
+    return true;
+  }
+  checkLift(node) {
+    // location of the camera must be in the lift
+    // 1 is the highest floor
+
+    if ((this.liftkeyUp || this.interactionKey) && this.floor_number == 0) {
+      // get the animation
+      this.floor_number++;
+      this.gameLogic.button_press_in_animation.play();
+      this.gameLogic.animation_up.play();
+    } else if (
+      (this.liftkeyDown || this.interactionKey) &&
+      this.floor_number == 1
+    ) {
+      this.floor_number--;
+      this.gameLogic.button_press_in_animation.play();
+      this.gameLogic.animation_down.play();
+    }
+  }
+
+  checkInteraction(camera, node) {
+    if (node.pickable || node.switchable) {
+      let isNear = this.isItemInCenterAndNear(camera, node);
+      if (isNear) {
+        if (node.pickable) {
+          document.getElementById("pickup-text").style.display = "block";
+          if (this.interactionKey || this.itemPickupKeyPressed) {
+            this.gameLogic.checkIfCorrectItemPickedUp(node);
+          }
+        } else if (node.switchable) {
+          document.getElementById("lift-text").style.display = "block";
+          this.checkLift(node);
+        }
+      }
+    }
   }
 }
