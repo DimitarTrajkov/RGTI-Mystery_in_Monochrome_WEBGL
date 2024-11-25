@@ -12,16 +12,34 @@ export function getLocalModelMatrix(node) {
     return matrix;
 }
 
-export function getGlobalModelMatrix(node) {
+// export function getGlobalModelMatrix(node) {
+//     if (node.parent) {
+//         const parentMatrix = getGlobalModelMatrix(node.parent);
+//         const modelMatrix = getLocalModelMatrix(node);
+//         return parentMatrix.multiply(modelMatrix);
+//     } else {
+//         return getLocalModelMatrix(node);
+//     }
+// }
+function getGlobalModelMatrix(node) {
+    let matrix = getLocalModelMatrix(node); // Get local matrix
+  
     if (node.parent) {
-        const parentMatrix = getGlobalModelMatrix(node.parent);
-        const modelMatrix = getLocalModelMatrix(node);
-        return parentMatrix.multiply(modelMatrix);
+      console.log(`Node ${node} has parent:`, node.parent);
     } else {
-        return getLocalModelMatrix(node);
+      console.log(`Node ${node} has no parent.`);
     }
-}
-
+  
+    let currentNode = node;
+    while (currentNode.parent) {
+      matrix = mat4.multiply(mat4.create(), currentNode.parent.modelMatrix, matrix);
+      currentNode = currentNode.parent;
+    }
+  
+    return matrix;
+  }
+  
+  
 export function getLocalViewMatrix(node) {
     return getLocalModelMatrix(node).invert();
 }
