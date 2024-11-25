@@ -38,8 +38,10 @@ export class Physics {
 
     // Load audio elements without autoplay
     this.backgroundMusic = document.getElementById("background-music");
-    this.correctMusic = document.getElementById("correct-music");
-    this.wrongMusic = document.getElementById("wrong-music");
+    this.correctMusicFiles = ["correct_0.MP3", "correct_1.MP3"];
+    this.wrongMusicFiles = ["wrong_0.MP3", "wrong_1.MP3", "wrong_2.MP3", "wrong_3.MP3"];
+    // this.correctMusic = document.getElementById("correct-music");
+    // this.wrongMusic = document.getElementById("wrong-music");
     this.tickingMusic = document.getElementById("ticking-music");
     this.lift_text_blocked = false;
 
@@ -345,6 +347,10 @@ shrinkItem(itemNode, duration = 0.2) {
     this.timeLeft -= 1;
     this.timerElement.style.color = "red";
     this.circleTimer.style.stroke = "red";
+
+    // Play the wrong music
+    const wrongMusicIndex = Math.floor(Math.random() * this.correctMusicFiles.length);
+    this.wrongMusic = new Audio(`./sounds/${this.wrongMusicFiles[correctMusicIndex]}`);
     this.wrongMusic.play();
     document.getElementById("wrong-item").style.display = "block";
     setTimeout(() => {
@@ -372,14 +378,19 @@ shrinkItem(itemNode, duration = 0.2) {
     this.timeLeft += 3;
     this.timerElement.style.color = "green";
     this.circleTimer.style.stroke = "green";
+
+    // Play the correct music
+    const correctMusicIndex = Math.floor(Math.random() * this.correctMusicFiles.length);
+    this.correctMusic = new Audio(`./sounds/${this.correctMusicFiles[correctMusicIndex]}`);
     this.correctMusic.play();
+
     document.getElementById("correct-item").style.display = "block";
     setTimeout(() => {
       document.getElementById("correct-item").style.display = "none";
       this.timerElement.style.color = "black";
       this.circleTimer.style.stroke = "black";
       this.correctMusic.pause();
-    }, 500);
+    }, 5000);
   }
 
   checkIfCorrectItemPickedUp(itemNode) {
