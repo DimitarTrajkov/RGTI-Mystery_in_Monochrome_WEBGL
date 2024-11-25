@@ -26,18 +26,26 @@ await loader.load("scene/scene50.gltf");
 
 const scene = loader.loadScene(loader.defaultScene);
 const camera = loader.loadNode("Camera");
+const cameraHitbox = new Node();
+cameraHitbox.parent = null;
+cameraHitbox.addComponent(new Transform());
+cameraHitbox.aabb = {
+  min: [-0.1, -1.5, -0.1],
+  max: [0.1, -0.0, 0.1],
+};
+cameraHitbox.isCameraHitbox = true;
+cameraHitbox.isStatic = true;
+cameraHitbox.draw = false;
+scene.addChild(cameraHitbox);
 camera.addComponent(new FirstPersonController(camera, canvas));
 
 camera.isDynamic = true;
+camera.hitbox = cameraHitbox;
 let colorIndex = 0;
-camera.aabb = {
-  min: [-0.2, -0.3, -0.3],
-  max: [0.2, 0.3, 0.3],
-};
 
 // Define color array for light and initialize color index
 const colorArray = [
-  [255, 255, 255],
+  [30, 30, 30],
   [100, 100, 255],
   [0, 255, 0],
   [0, 255, 255],

@@ -12,6 +12,7 @@ export class FirstPersonController {
         maxSpeed = 5,
         decay = 0.99999,
         pointerSensitivity = 0.002,
+        gravity = 9.8,
     } = {}) {
         this.node = node;
         this.domElement = domElement;
@@ -106,6 +107,7 @@ export class FirstPersonController {
             quat.rotateY(rotation, rotation, this.yaw);
             quat.rotateX(rotation, rotation, this.pitch);
             transform.rotation = rotation;
+            transform.translation[1] -= dt * 0.1;
         }
     }
 

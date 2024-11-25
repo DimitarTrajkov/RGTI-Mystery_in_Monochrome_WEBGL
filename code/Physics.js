@@ -180,11 +180,22 @@ export class Physics {
       // console.log(node.id, node.aabb);
       // if camera
       if (node.isDynamic) {
+        console.log(node.components[0].translation);
         this.scene.traverse((other) => {
           // if camera != camera and colision detection
           if (node !== other && other.isStatic) {
+
+            // Teleport hitbox to camera
+            if (other.isCameraHitbox) { other.components[0].translation = node.components[0].translation;}
+
             // check for colisions
-            this.resolveCollision(node, other);
+            if (!other.isCameraHitbox) {
+              this.resolveCollision(node.hitbox, other);
+            }
+
+            // Teleport camera to hitbox
+            if (other.isCameraHitbox) { node.components[0].translation = other.components[0].translation; }
+
             // check for interaction
             this.checkInteraction(node, other);
           }
