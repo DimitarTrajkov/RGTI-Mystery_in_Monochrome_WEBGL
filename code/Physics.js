@@ -180,7 +180,7 @@ export class Physics {
       // console.log(node.id, node.aabb);
       // if camera
       if (node.isDynamic) {
-        console.log(node.components[0].translation);
+        // console.log(node.components[0].translation);
         this.scene.traverse((other) => {
           // if camera != camera and colision detection
           if (node !== other && other.isStatic) {

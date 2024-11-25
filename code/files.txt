@@ -1,0 +1,3 @@
+DefaultMaterial_normal.png
+DiamondPlate007A_2K-JPG_Color.jpg
+DiamondPlate007A_2K-JPG_Color_jpg.jpg

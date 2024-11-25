@@ -28,7 +28,8 @@ export class GLTFLoader {
         this.gltf = await this.fetchJson(this.gltfUrl);
         this.defaultScene = this.gltf.scene ?? 0;
         this.cache = new Map();
-
+        // console.log("bitno", this.gltf.buffers);
+        // console.log("bitno2", this.gltf.images);
         await Promise.all(this.gltf.buffers?.map(buffer => this.preloadBuffer(buffer)) ?? []);
         await Promise.all(this.gltf.images?.map(image => this.preloadImage(image)) ?? []);
 
@@ -67,8 +68,10 @@ export class GLTFLoader {
         }
 
         if (gltfSpec.uri) {
-            const url = new URL(gltfSpec.uri, this.gltfUrl);
+            const url = new URL(gltfSpec.uri, "https://sivanovska.github.io/WebGL-assets/");
+            // const url = new URL(gltfSpec.uri, this.gltfUrl);
             const image = await this.fetchImage(url);
+            console.log("dela");
             this.cache.set(gltfSpec, image);
             return image;
         } else {
@@ -88,8 +91,12 @@ export class GLTFLoader {
         if (this.cache.has(gltfSpec)) {
             return this.cache.get(gltfSpec);
         }
+        const url = new URL(gltfSpec.uri, "https://sivanovska.github.io/WebGL-assets/");
 
-        const url = new URL(gltfSpec.uri, this.gltfUrl);
+        // const url = new URL(gltfSpec.uri, this.gltfUrl);
+        console.log("gltfSpec.uri",gltfSpec.uri);
+        console.log("this.gltfUrl",this.gltfUrl);
+        console.log("url od dek so fetcha", url);
         const buffer = await this.fetchBuffer(url);
         this.cache.set(gltfSpec, buffer);
         return buffer;

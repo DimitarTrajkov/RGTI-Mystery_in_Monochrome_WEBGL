@@ -19,9 +19,9 @@ const canvas = document.querySelector("canvas");
 const renderer = new Renderer(canvas);
 await renderer.initialize();
 
+// LOAD THE DATA HERE
 const loader = new GLTFLoader();
-await loader.load("scene/scene53.gltf");
-
+await loader.load("https://sivanovska.github.io/WebGL-assets/scene53.gltf");
 
 const scene = loader.loadScene(loader.defaultScene);
 const camera = loader.loadNode("Camera");
