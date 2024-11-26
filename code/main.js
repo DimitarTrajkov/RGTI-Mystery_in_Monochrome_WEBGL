@@ -47,6 +47,7 @@ let colorIndex = 0;
 
 // Define color array for light and initialize color index
 const colorArray = [
+  [30, 30, 30],
   [0, 30, 0],
   [0, 30, 30],
   [30, 0, 0],
