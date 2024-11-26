@@ -23,7 +23,8 @@ await renderer.initialize();
 
 // LOAD THE DATA HERE
 const loader = new GLTFLoader();
-await loader.load("https://sivanovska.github.io/WebGL-assets/scene53.gltf");
+// await loader.load("scene/scene01.gltf");
+await loader.load("https://sivanovska.github.io/WebGL-assets/scene50.gltf");
 
 const scene = loader.loadScene(loader.defaultScene);
 const camera = loader.loadNode("Camera");
@@ -46,13 +47,11 @@ let colorIndex = 0;
 
 // Define color array for light and initialize color index
 const colorArray = [
-  [30, 30, 30],
-  [100, 100, 255],
-  [0, 255, 0],
-  [0, 255, 255],
-  [255, 0, 0],
-  [255, 0, 255],
-  [255, 255, 0],
+  [0, 30, 0],
+  [0, 30, 30],
+  [30, 0, 0],
+  [30, 0, 30],
+  [30, 30, 0],
 ];
 
 const light = new Node();
@@ -73,7 +72,12 @@ scene.addChild(light);
 // TODO: fix it such that the lift goes down as well as the room
 const name_Lift_sides = ["button","button place","celing elevator", "door part left", "door part right", "doors frame. right", "doors frame.up","doors frameleft","elevator floor",
   "elevator wall","elevator wall.001", "elevator wall.002" ]; // LIGHT IS PART OF THE LIFT      AND THE CAMERA!!!!
-const pickable_items = ["Envelope_1_Paper& Envelope_0","gun 2"];
+const pickable_items = [
+  "all_purpose_cleaner","battery","bleach_bottle","blue cleaner","bonbons",
+  "book","cinnamon rolls","encyclopedia","file holder", "gun1",
+  "gun2", "lil duck","medkit","molotov","open book",
+  "papers","radio transistor","tablet","walkie talkie"
+];
 // const switch_items_names = [];
 // const switch_items = [];
 const Lift = [];
@@ -134,8 +138,8 @@ lift_down.addNextAnimation(right_door_open);
 
 
 
-const button_press_in_animation = new LinearAnimator([loader.loadNode("button")],  {dx: 0,dy: 0,dz: 0.1,startTime: 0,duration: 0.1});
-const button_press_out_animation = new LinearAnimator([loader.loadNode("button")], {dx: 0,dy: 0,dz: -0.1,startTime: 0,duration: 0.1});
+const button_press_in_animation = new LinearAnimator([loader.loadNode("button")],  {dx: -0.017,dy: 0,dz: 0,startTime: 0,duration: 0.2});
+const button_press_out_animation = new LinearAnimator([loader.loadNode("button")], {dx: 0.017,dy: 0,dz: 0,startTime: 0,duration: 0.2});
 
 
 button_press_in_animation.addNextAnimation(button_press_out_animation);
@@ -185,7 +189,7 @@ scene.addComponent({
 });
 
 // Hotbar
-const num_correct_items = 3;
+const num_correct_items = 5;
 const items_to_pick_up = [];
 // document.getElementById("image-subject").src = `${items_to_pick_up[0]}.jpeg`;
 var hotbar = document.querySelector(".hotbar");

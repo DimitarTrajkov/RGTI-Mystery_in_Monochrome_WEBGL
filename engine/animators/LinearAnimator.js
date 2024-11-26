@@ -139,6 +139,21 @@ export class LinearAnimator {
         this.nextAnimations.push(animation);
     }
 
+    isPlaying() {
+        if (this.playing)
+            return true;
+
+        for (const animation of this.nextAnimations) {
+            if (animation.isPlaying()) {
+                return true;
+            }
+        }
+        
+        return false;
+    }
+    
+    
+
     update(t, dt) {
         if (!this.playing) {
             return;

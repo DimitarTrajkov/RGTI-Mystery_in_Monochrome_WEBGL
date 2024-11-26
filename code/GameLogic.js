@@ -14,6 +14,7 @@ export class GameLogic {
         colorArray,
         lightComponent,
     ) {
+        this.action_taken = false;
         this.camera = camera;
         this.items_to_pick_up = items_to_pick_up;
 
@@ -34,7 +35,8 @@ export class GameLogic {
             this.startGame();
         });
 
-        this.startingTime = 30;
+        this.startingTime = 120;
+        this.maxTime = this.startingTime;
         this.timeLeft = this.startingTime;
         this.completed_the_game = false;
 
@@ -106,15 +108,17 @@ export class GameLogic {
     }
 
     updateTimerDisplay() {
-        this.timerElement.innerText = `${this.timeLeft.toFixed(1)}s`;
+        const minutes = Math.floor(this.timeLeft / 60);
+        const seconds = Math.floor(this.timeLeft % 60);
+        this.timerElement.innerText = `${minutes}:${seconds.toString().padStart(2, '0')}`;
         this.updateMusicSpeed();
         const maxOffset = 376;
-        const offset = maxOffset * (1 - this.timeLeft / 30);
+        const offset = maxOffset * (1 - this.timeLeft / this.maxTime);
         this.circleTimer.style.strokeDashoffset = offset;
 
         if (this.timeLeft <= 10) {
             // document.getElementById("full_screen").style.display = "block";
-            const eyelidCloseFactor = Math.max(0, (10 - this.timeLeft) / 10);
+            const eyelidCloseFactor = Math.max(0, (this.maxTime - this.timeLeft) / this.maxTime);
             this.eyelidTop.style.opacity = 0.7 + 0.2 * eyelidCloseFactor;
             this.eyelidBottom.style.opacity = 0.7 + 0.2 * eyelidCloseFactor;
             // document.getElementById("full_screen").style.opacity = 0.7*eyelidCloseFactor;
@@ -125,9 +129,10 @@ export class GameLogic {
 
     updateMusicSpeed() {
         this.tickingMusic.playbackRate =
-            0.5 + Math.max(((30 - this.timeLeft) / 30) * 1.5, 0);
+            0.5 + Math.max(((this.maxTime - this.timeLeft) / this.maxTime) * 1.5, 0);
         this.tickingMusic.volume =
-            0.15 + Math.max((30 - this.timeLeft) / 30, 0) ** 2 * 0.75;
+            0.15 + Math.max((this.maxTime - this.timeLeft) / this.maxTime, 0) ** 2 * 0.75;
+        console.log("volume", this.tickingMusic.volume);
     }
 
     showGameOver() {
@@ -196,8 +201,8 @@ export class GameLogic {
         this.circleTimer.style.stroke = "red";
 
         // Play the wrong music
-        const wrongMusicIndex = Math.floor(Math.random() * this.correctMusicFiles.length);
-        this.wrongMusic = new Audio(`./sounds/${this.wrongMusicFiles[correctMusicIndex]}`);
+        const wrongMusicIndex = Math.floor(Math.random() * this.wrongMusicFiles.length);
+        this.wrongMusic = new Audio(`./sounds/${this.wrongMusicFiles[wrongMusicIndex]}`);
         this.wrongMusic.play();
         document.getElementById("wrong-item").style.display = "block";
         setTimeout(() => {
@@ -205,7 +210,8 @@ export class GameLogic {
             this.timerElement.style.color = "black";
             this.circleTimer.style.stroke = "black";
             this.wrongMusic.pause();
-        }, 500);
+            this.action_taken = false;
+        }, 3000);
     }
 
     correctItemPickedUp(itemNode) {
@@ -235,11 +241,16 @@ export class GameLogic {
             this.timerElement.style.color = "black";
             this.circleTimer.style.stroke = "black";
             this.correctMusic.pause();
-        }, 5000);
+            this.action_taken = false;
+        }, 3000);
     }
 
 
     checkIfCorrectItemPickedUp(itemNode) {
+        // if you pressed the button already wait 3s before doing anything
+        if (this.action_taken) return;
+        // pressed the button
+        this.action_taken = true;
         // Check if the item picked up is any of the items needed to be picked up
         for (let i = 0; i < this.items_to_pick_up.length; i++) {
             if (itemNode.name == this.items_to_pick_up[i]) {

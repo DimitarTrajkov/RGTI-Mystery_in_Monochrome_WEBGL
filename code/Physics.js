@@ -14,17 +14,14 @@ export class Physics {
 
     this.gameLogic = gameLogic;
 
-    this.itemPickupKeyPressed = false;
     this.liftkeyUp = false;
     this.liftkeyDown = false;
     this.interactionKey = false;
     this.floor_number = 0;
 
     // letter P for pick up
-    document.addEventListener("keydown", (event) => {
-      if (event.key === "p" || event.key === "P") {
-        this.itemPickupKeyPressed = true;
-      } else if (event.key === "ArrowUp") {
+    document.addEventListener("keyup", (event) => {
+        if (event.key === "ArrowUp") {
         this.liftkeyUp = true;
       } else if (event.key === "ArrowDown") {
         this.liftkeyDown = true;
@@ -69,7 +66,6 @@ export class Physics {
     this.liftkeyUp = false; // arrowUp
     this.liftkeyDown = false; // arrowDown
     this.interactionKey = false;
-    this.itemPickupKeyPressed = false;
   }
 
   intervalIntersection(min1, max1, min2, max2) {
@@ -173,8 +169,8 @@ export class Physics {
   isItemInCenterAndNear(
     cameraNode,
     itemNode,
-    thresholdDistance = 15,
-    thresholdAngle = 5
+    thresholdDistance = 1,
+    thresholdAngle = 15
   ) {
     const cameraPosition = cameraNode.getComponentOfType(Transform).translation;
     const itemPosition = itemNode.getComponentOfType(Transform).translation;
@@ -208,7 +204,10 @@ export class Physics {
   checkLift(node) {
     // location of the camera must be in the lift
     // 1 is the highest floor
-
+    if ( this.gameLogic.animation_down.isPlaying() || this.gameLogic.animation_up.isPlaying() ) {
+      return
+    }
+    
     if ((this.liftkeyUp || this.interactionKey) && this.floor_number == 0) {
       // get the animation
       this.floor_number++;
@@ -230,7 +229,7 @@ export class Physics {
       if (isNear) {
         if (node.pickable) {
           document.getElementById("pickup-text").style.display = "block";
-          if (this.interactionKey || this.itemPickupKeyPressed) {
+          if (this.interactionKey) {
             this.gameLogic.checkIfCorrectItemPickedUp(node);
           }
         } else if (node.switchable) {
