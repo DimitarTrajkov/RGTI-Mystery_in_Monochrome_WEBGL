@@ -263,26 +263,6 @@ export class Renderer extends BaseRenderer {
     return gpuObjects;
   }
 
-  // prepareLight(light) {
-  //   if (this.gpuObjects.has(light)) {
-  //     return this.gpuObjects.get(light);
-  //   }
-
-  //   const lightUniformBuffer = this.device.createBuffer({
-  //     size: 48,
-  //     usage: GPUBufferUsage.UNIFORM | GPUBufferUsage.COPY_DST,
-  //   });
-
-  //   const lightBindGroup = this.device.createBindGroup({
-  //     layout: this.lightBindGroupLayout,
-  //     entries: [{ binding: 0, resource: { buffer: lightUniformBuffer } }],
-  //   });
-
-  //   const gpuObjects = { lightUniformBuffer, lightBindGroup };
-  //   this.gpuObjects.set(light, gpuObjects);
-  //   return gpuObjects;
-  // }
-
   prepareLight(light) {
     if (this.gpuObjects.has(light)) {
         return this.gpuObjects.get(light);
@@ -488,38 +468,93 @@ export class Renderer extends BaseRenderer {
   }
 
   
-  renderShadows(scene, camera) {
-    const light = scene.find((node) => node.getComponentOfType(Light));
-    const lightComponent = light.getComponentOfType(Light);
-    const { lightDepthTexture } = this.prepareLight(lightComponent);
+  // renderShadows(scene, camera) {
+  //   const lights = scene.filter(node => node.getComponentOfType(Light));
+  //       for (const light of lights) {
+  //           const lightComponent = light.getComponentOfType(Light);
+  //           const { lightDepthTexture } = this.prepareLight(lightComponent);
 
-    const encoder = this.device.createCommandEncoder();
-    this.renderPass = encoder.beginRenderPass({
-        colorAttachments: [],
-        depthStencilAttachment: {
-            view: lightDepthTexture.createView(),
-            depthClearValue: 1,
-            depthLoadOp: 'clear',
-            depthStoreOp: 'store',
-        },
-    });
-    this.renderPass.setPipeline(this.shadowPipeline);
+  //           const encoder = this.device.createCommandEncoder();
+  //           this.renderPass = encoder.beginRenderPass({
+  //               colorAttachments: [],
+  //               depthStencilAttachment: {
+  //                   view: lightDepthTexture.createView(),
+  //                   depthClearValue: 1,
+  //                   depthLoadOp: 'clear',
+  //                   depthStoreOp: 'store',
+  //               },
+  //           });
+  //           this.renderPass.setPipeline(this.shadowPipeline);
 
-    const viewMatrix = getGlobalViewMatrix(light);
-    const projectionMatrix = getProjectionMatrix(light);
-    const lightPosition = mat4.getTranslation(vec3.create(), getGlobalModelMatrix(light));
-    const cameraComponent = camera.getComponentOfType(Camera);
-    const { cameraUniformBuffer, cameraBindGroup } = this.prepareCamera(cameraComponent);
-    this.device.queue.writeBuffer(cameraUniformBuffer, 0, viewMatrix);
-    this.device.queue.writeBuffer(cameraUniformBuffer, 64, projectionMatrix);
-    this.renderPass.setBindGroup(0, cameraBindGroup);
+  //           const cameraComponent = light.getComponentOfType(Camera);
+  //           const viewMatrix = getGlobalViewMatrix(light);
+  //           const projectionMatrix = getProjectionMatrix(light);
+  //           const lightPosition = mat4.getTranslation(vec3.create(), getGlobalModelMatrix(light));
+  //           const { cameraUniformBuffer, cameraBindGroup } = this.prepareCamera(cameraComponent);
+  //           this.device.queue.writeBuffer(cameraUniformBuffer, 0, viewMatrix);
+  //           this.device.queue.writeBuffer(cameraUniformBuffer, 64, projectionMatrix);
+  //           this.renderPass.setBindGroup(0, cameraBindGroup);
 
-    this.renderNode(scene);
+  //           this.renderNode(scene);
 
-    this.renderPass.end();
-    this.device.queue.submit([encoder.finish()]);
+  //           this.renderPass.end();
+  //           this.device.queue.submit([encoder.finish()]);
+  //       }
     
-  }
+  // }
+
+  renderShadows(scene, camera) {
+    const lights = scene.filter(node => {
+        const lightComponent = node.getComponentOfType(Light);
+        if (!lightComponent) {
+            console.warn("Skipping node without Light component:", node);
+        }
+        return !!lightComponent;
+    });
+
+    for (const light of lights) {
+        const lightComponent = light.getComponentOfType(Light);
+        const { lightDepthTexture } = this.prepareLight(lightComponent);
+
+        if (!lightDepthTexture) {
+            console.error("Failed to prepare light depth texture for:", light);
+            continue;
+        }
+
+        const cameraComponent = light.getComponentOfType(Camera);
+        if (!cameraComponent) {
+            console.warn("Skipping light without Camera component:", light);
+            continue;
+        }
+
+        const encoder = this.device.createCommandEncoder();
+        this.renderPass = encoder.beginRenderPass({
+            colorAttachments: [],
+            depthStencilAttachment: {
+                view: lightDepthTexture.createView(),
+                depthClearValue: 1,
+                depthLoadOp: 'clear',
+                depthStoreOp: 'store',
+            },
+        });
+        this.renderPass.setPipeline(this.shadowPipeline);
+
+        const viewMatrix = getGlobalViewMatrix(light);
+        const projectionMatrix = getProjectionMatrix(light);
+        const lightPosition = mat4.getTranslation(vec3.create(), getGlobalModelMatrix(light));
+        const { cameraUniformBuffer, cameraBindGroup } = this.prepareCamera(cameraComponent);
+
+        this.device.queue.writeBuffer(cameraUniformBuffer, 0, viewMatrix);
+        this.device.queue.writeBuffer(cameraUniformBuffer, 64, projectionMatrix);
+        this.renderPass.setBindGroup(0, cameraBindGroup);
+
+        this.renderNode(scene);
+
+        this.renderPass.end();
+        this.device.queue.submit([encoder.finish()]);
+    }
+}
+
 
   renderNode(node, modelMatrix = mat4.create()) {
     if (node.draw === false) return; // Skip nodes with `draw` set to false
