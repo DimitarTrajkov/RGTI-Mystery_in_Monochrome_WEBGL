@@ -37,9 +37,11 @@ export class Physics {
     document.getElementById("pickup-text").style.display = "none";
     document.getElementById("lift-text").style.display = "none";
 
+    
     this.scene.traverse((node) => {
       // if camera
       if (node.isDynamic) {
+        // console.log("Position: ", node.components[0].translation);
         this.scene.traverse((other) => {
           // if camera != camera and has colision detection
           if (node !== other && other.isStatic) {

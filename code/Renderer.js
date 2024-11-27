@@ -191,11 +191,12 @@ export class Renderer extends BaseRenderer {
       2.7,
       -4.5
   ], 1, [0.3,0.3,0.3,0.3], [0, -0.5, 0], 0.1, 1, 5000);
-    this.addEmitter([
-      8.8,
-      2.7,
-      -4.5
-  ], 2, [0.3,0.3,0.3,0.3], [0, -0.5, 0], 0.1, 1, 2000);
+  this.addEmitter([10.4, 2, -0.3], 20, [0.3,0.3,0.3,0.3], [0, 0, 0], 10, 0.1, 10000);
+  //   this.addEmitter([
+  //     8.8,
+  //     2.7,
+  //     -4.5
+  // ], 2, [0.3,0.3,0.3,0.3], [0, -0.5, 0], 0.1, 1, 2000);
     // this.addEmitter([0, 1, 1.5], 0.1, [0.1, 0.1, 0.1, 0.1], [0, 20, 0], 0.1, 10, 10000);
 
     this.initializeEmitters();
@@ -265,7 +266,7 @@ initializeEmitters() {
         for (let j = 0; j < emitter.numParticles; j++) {
             const baseIndex = particlesBuffered * (floatsPerParticle);
             particleData.set(emitter.position, baseIndex);
-            particleData.set(emitter.lifetime, baseIndex + 3);
+            particleData[baseIndex + 3] = j / emitter.numParticles * emitter.lifetime * 5;
             particleData.set(emitter.color, baseIndex + 4);
             particleData.set(emitter.velocity, baseIndex + 8);
             particleData.set([i], baseIndex + 11);
@@ -624,7 +625,8 @@ async initializeParticles(moduleForInstancing) {
         };
 
         const currentTime = performance.now();
-        const deltaTime = (currentTime - this.previousTime) / 1000; // Convert to seconds
+        var deltaTime = (currentTime - this.previousTime) / 1000; // Convert to seconds
+        deltaTime = Math.min(deltaTime, 0.1); // Cap to 0.1 seconds
         this.previousTime = currentTime;
 
         this.device.queue.writeBuffer(
