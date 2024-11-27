@@ -47,7 +47,6 @@ let colorIndex = 0;
 
 // Define color array for light and initialize color index
 const colorArray = [
-  [30, 30, 30],
   [0, 30, 0],
   [0, 30, 30],
   [30, 0, 0],
@@ -189,11 +188,59 @@ scene.addComponent({
   },
 });
 
+document.querySelector(".loading-container").style.display = "none";
+const levelButtons = document.querySelectorAll(".level-buttons .button");
+const startButton = document.getElementById("start-button");
+
+let num_correct_items = 0; // Store the selected level
+
+levelButtons.forEach((button) => {
+  button.disabled = false;
+  });
+// Add click event listeners to level buttons
+levelButtons.forEach((button) => {
+  button.addEventListener("click", (event) => {
+    // Clear selected state from all buttons
+    levelButtons.forEach((btn) => btn.classList.remove("selected"));
+
+    // Mark the clicked button as selected
+    const level = parseInt(event.target.id.split("-")[1]);
+    event.target.classList.add("selected");
+
+    // Update num_correct_items based on the level
+    if (level === 1) {
+      num_correct_items = 3;
+    } else if (level === 2) {
+      num_correct_items = 5;
+    } else if (level === 3) {
+      num_correct_items = 7;
+    }
+
+    // Enable the start button
+    startButton.disabled = false;
+
+    // Clear and update hotbar items
+    hotbar.innerHTML = "";
+    items_to_pick_up.length = 0;
+    select_items_to_pick_up(num_correct_items);
+  });
+});
+
+// Add functionality to the start button
+startButton.addEventListener("click", () => {
+  if (num_correct_items > 0) {
+    console.log(`Starting search with ${num_correct_items} correct items!`);
+    // Add your search logic here
+  }
+});
+
+
 // Hotbar
-const num_correct_items = 5;
+// const num_correct_items = 5;
 const items_to_pick_up = [];
 // document.getElementById("image-subject").src = `${items_to_pick_up[0]}.jpeg`;
 var hotbar = document.querySelector(".hotbar");
+
 function createHotbar(items) {
   items.forEach((item) => {
     const img = document.createElement("img");
@@ -297,7 +344,6 @@ scene.traverse((node) => {
   node.aabb = x;
   node.isStatic = true;
 });
-console.log(scene);
 function update(time, dt) {
   scene.traverse((node) => {
     for (const component of node.components) {

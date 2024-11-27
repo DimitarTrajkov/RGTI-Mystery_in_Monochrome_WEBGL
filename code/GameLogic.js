@@ -36,6 +36,23 @@ export class GameLogic {
         });
 
         this.startingTime = 120;
+        // this.colorFactor = 10;
+        // if (this.items_to_pick_up.length == 3){
+        //     this.startingTime = 60;
+        //     this.colorFactor = 15;
+        // }else if (this.items_to_pick_up.length == 5){
+        //     this.startingTime = 90;
+        //     this.colorFactor = 7;
+        // }else{
+        //     this.startingTime = 120;
+        //     this.colorFactor = 0;
+        // }
+        // this.colorArray  = this.colorArray.map(row => 
+        //     row.map(value => (value === 0 ? this.colorFactor : value))
+        //   );
+        console.log(this.colorArray);
+        for (let i = 0; i < this.colorArray.length; i++) {
+        }
         this.maxTime = this.startingTime;
         this.timeLeft = this.startingTime;
         this.completed_the_game = false;
@@ -74,6 +91,8 @@ export class GameLogic {
     startGame() {
         // Hide the game intro
         this.gameIntroElement.style.display = "none";
+        document.querySelector(".hotbar").style.display = "flex";
+        document.getElementById("circle-timer-container").style.display = "block";
         this.startTimer();
         this.playBackgroundMusic();
         this.playTickingMusic();
