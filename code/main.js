@@ -24,7 +24,7 @@ await renderer.initialize();
 // LOAD THE DATA HERE
 const loader = new GLTFLoader();
 // await loader.load("scene/scene01.gltf");
-await loader.load("https://sivanovska.github.io/WebGL-assets/scene50.gltf");
+await loader.load("https://sivanovska.github.io/WebGL-assets/scene51.gltf");
 
 const scene = loader.loadScene(loader.defaultScene);
 const camera = loader.loadNode("Camera");
