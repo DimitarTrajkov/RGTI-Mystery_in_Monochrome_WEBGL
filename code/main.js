@@ -74,7 +74,7 @@ const name_Lift_sides = ["button","button place","celing elevator", "door part l
   "elevator wall","elevator wall.001", "elevator wall.002" ]; // LIGHT IS PART OF THE LIFT      AND THE CAMERA!!!!
 const pickable_items = [
   "all_purpose_cleaner","battery","bleach_bottle","blue cleaner","bonbons",
-  "book","cinnamon rolls","encyclopedia","file holder", "gun1",
+  "book","encyclopedia","file holder", "gun1",
   "gun2", "lil duck","medkit","molotov","open book",
   "papers","radio transistor","tablet","walkie talkie"
 ];
