@@ -178,14 +178,22 @@ export class Physics {
   isItemInCenterAndNear(
     cameraNode,
     itemNode,
-    thresholdDistance = 1,
+    thresholdHorizontalDistance = 1,
+    thresholdVerticalDistance = 2,
     thresholdAngle = 15
   ) {
     const cameraPosition = cameraNode.getComponentOfType(Transform).translation;
     const itemPosition = itemNode.getComponentOfType(Transform).translation;
 
-    const distance = vec3.distance(cameraPosition, itemPosition);
-    if (distance > thresholdDistance) {
+    // Check horizontal distance (Can't do vec3 distance because we only care about x and z)
+    const distance = Math.sqrt( Math.pow(cameraPosition[0] - itemPosition[0], 2) + Math.pow(cameraPosition[2] - itemPosition[2], 2) );
+    if (distance > thresholdHorizontalDistance) {
+      return false;
+    }
+
+    // Check vertical distance
+    const verticalDistance = Math.abs(cameraPosition[1] - itemPosition[1]);
+    if (verticalDistance > thresholdVerticalDistance) {
       return false;
     }
 
