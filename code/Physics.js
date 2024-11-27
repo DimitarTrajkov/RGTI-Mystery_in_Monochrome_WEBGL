@@ -183,6 +183,7 @@ export class Physics {
     thresholdAngle = 15
   ) {
     const cameraPosition = cameraNode.getComponentOfType(Transform).translation;
+    console.log(cameraPosition);
     const itemPosition = itemNode.getComponentOfType(Transform).translation;
 
     // Check horizontal distance (Can't do vec3 distance because we only care about x and z)

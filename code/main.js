@@ -47,21 +47,21 @@ let colorIndex = 0;
 
 // Define color array for light and initialize color index
 const colorArray = [
-  [0, 30, 0],
-  [0, 30, 30],
-  [30, 0, 0],
-  [30, 0, 30],
-  [30, 30, 0],
+  [7, 30, 7],
+  [7, 30, 30],
+  [30, 7, 7],
+  [30, 7, 30],
+  [30, 30, 7],
 ];
 
 const light = new Node();
 const LightTranslationComponent = new Transform({
-  translation: [1, 1.5, 0],
+  translation: [9, 1.5, -0.7],
 });
 light.addComponent(LightTranslationComponent);
 const lightComponent = new Light({
   color: colorArray[colorIndex], // Start with the first color
-  intensity: 0,
+  intensity: 0.5,
 });
 light.addComponent(lightComponent);
 light.draw = true; // Add `draw` property to control rendering
@@ -73,10 +73,10 @@ scene.addChild(light);
 const name_Lift_sides = ["button","button place","celing elevator", "door part left", "door part right", "doors frame. right", "doors frame.up","doors frameleft","elevator floor",
   "elevator wall","elevator wall.001", "elevator wall.002" ]; // LIGHT IS PART OF THE LIFT      AND THE CAMERA!!!!
 const pickable_items = [
-  "all_purpose_cleaner","battery","bleach_bottle","blue cleaner","bonbons",
-  "book","encyclopedia","file holder", "gun1",
+  // "all_purpose_cleaner","battery","bleach_bottle","blue cleaner","bonbons",
+  // "book","encyclopedia","file holder", "gun1",
   "gun2", "lil duck","medkit","molotov","open book",
-  "papers","radio transistor","tablet","walkie talkie"
+  // "papers","radio transistor","tablet","walkie talkie"
 ];
 const pickable_not_correct = [
   "coffeemaker_0","Object_4"
@@ -360,8 +360,8 @@ function update(time, dt) {
   });
   // make the light little flickering
   lightComponent.intensity += Math.random() * 0.3 - 0.15;
-  lightComponent.intensity = Math.max(1.5, lightComponent.intensity);
-  lightComponent.intensity = Math.min(4.5, lightComponent.intensity);
+  lightComponent.intensity = Math.max(0.7, lightComponent.intensity);
+  lightComponent.intensity = Math.min(1.5, lightComponent.intensity);
   physics.update(time, dt);
 }
 
