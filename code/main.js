@@ -24,7 +24,7 @@ await renderer.initialize();
 // LOAD THE DATA HERE
 const loader = new GLTFLoader();
 // await loader.load("scene/scene01.gltf");
-await loader.load("https://sivanovska.github.io/WebGL-assets/scene51.gltf");
+await loader.load("https://sivanovska.github.io/WebGL-assets/scene52.gltf");
 
 const scene = loader.loadScene(loader.defaultScene);
 const camera = loader.loadNode("Camera");
@@ -78,11 +78,19 @@ const pickable_items = [
   "gun2", "lil duck","medkit","molotov","open book",
   "papers","radio transistor","tablet","walkie talkie"
 ];
+const pickable_not_correct = [
+  "coffeemaker_0","Object_4"
+]
 // const switch_items_names = [];
 // const switch_items = [];
 const Lift = [];
 
 for (let i of pickable_items) {
+  const node = loader.loadNode(i);
+  node.pickable = true;
+}
+
+for (let i of pickable_not_correct) {
   const node = loader.loadNode(i);
   node.pickable = true;
 }
