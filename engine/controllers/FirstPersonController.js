@@ -53,7 +53,9 @@ export class FirstPersonController {
         });
     }
 
+    frameCount = 0;
     update(t, dt) {
+        this.frameCount++;
         if(!this.active_controller)
             return;
         // Calculate forward and right vectors.
@@ -107,7 +109,7 @@ export class FirstPersonController {
             quat.rotateY(rotation, rotation, this.yaw);
             quat.rotateX(rotation, rotation, this.pitch);
             transform.rotation = rotation;
-            transform.translation[1] -= dt * 0.1;
+            transform.translation[1] -= 0.02;
         }
     }
 
