@@ -55,6 +55,10 @@ export class FirstPersonController {
 
     frameCount = 0;
     update(t, dt) {
+
+        // Limit dt
+        dt = Math.min(dt, 0.016);
+
         this.frameCount++;
         if(!this.active_controller)
             return;

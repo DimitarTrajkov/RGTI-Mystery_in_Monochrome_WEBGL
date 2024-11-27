@@ -138,6 +138,7 @@ export class Physics {
       minDiff = diffa[0];
       minDirection = [minDiff, 0, 0];
     }
+    // teleport up
     if (diffa[1] >= 0 && diffa[1] < minDiff) {
       minDiff = diffa[1];
       minDirection = [0, minDiff, 0];
@@ -157,6 +158,12 @@ export class Physics {
     if (diffb[2] >= 0 && diffb[2] < minDiff) {
       minDiff = diffb[2];
       minDirection = [0, 0, -minDiff];
+    }
+
+    // Step over small differences
+    if (diffa[1] < 0.1 && diffa[1] > 0) {
+      minDiff = diffa[1];
+      minDirection = [0, minDiff, 0];
     }
 
     const transform = a.getComponentOfType(Transform);

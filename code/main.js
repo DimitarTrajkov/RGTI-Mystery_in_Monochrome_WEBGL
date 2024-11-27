@@ -32,8 +32,8 @@ const cameraHitbox = new Node();
 cameraHitbox.parent = null;
 cameraHitbox.addComponent(new Transform());
 cameraHitbox.aabb = {
-  min: [-0.1, -1.5, -0.1],
-  max: [0.1, -0.0, 0.1],
+  min: [-0.2, -1.5, -0.2],
+  max: [0.2, -0.0, 0.2],
 };
 cameraHitbox.isCameraHitbox = true;
 cameraHitbox.isStatic = true;
