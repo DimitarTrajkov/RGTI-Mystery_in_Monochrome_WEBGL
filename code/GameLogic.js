@@ -274,6 +274,7 @@ export class GameLogic {
         for (let i = 0; i < this.items_to_pick_up.length; i++) {
             if (itemNode.name == this.items_to_pick_up[i]) {
                 document.querySelectorAll(".hotbar-item")[i].classList.add("grayscale");
+                document.querySelectorAll(".hotbar-item")[i].classList.add("opacity-50");
 
                 this.correctItemPickedUp(itemNode);
                 return;

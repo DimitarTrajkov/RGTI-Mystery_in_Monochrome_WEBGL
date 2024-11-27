@@ -492,6 +492,9 @@ svg {
 .grayscale {
   filter: grayscale(100%);
 }
+.opacity-50 {
+  opacity: 0.5;
+}
 
 
 

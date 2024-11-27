@@ -233,7 +233,7 @@ export class Physics {
   }
 
   checkInteraction(camera, node) {
-    if (node.pickable || node.switchable) {
+    if ( (node.pickable || node.switchable) && node.draw) {
       let isNear = this.isItemInCenterAndNear(camera, node);
       if (isNear) {
         if (node.pickable) {
