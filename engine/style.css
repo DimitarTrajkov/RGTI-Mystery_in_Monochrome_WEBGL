@@ -474,6 +474,7 @@ svg {
   display: none;
   flex-direction: row;
   gap: 10px;
+  max-width: calc(100vw - 30px);
 }
 
 .hotbar-item {
