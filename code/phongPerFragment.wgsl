@@ -87,7 +87,7 @@ fn fragment(input: FragmentInput) -> FragmentOutput {
 
     let shadowPosition = input.shadowPosition.xyz / input.shadowPosition.w;
     let shadowTexcoords = shadowPosition.xy * vec2(0.5, -0.5) + 0.5;
-    let shadowFactor = textureSampleCompare(shadowTexture, shadowSampler, shadowTexcoords.xy, shadowPosition.z - 0.002);
+    let shadowFactor = textureSampleCompare(shadowTexture, shadowSampler, shadowTexcoords.xy, shadowPosition.z + 0.005);
 
     let normal = normalize(input.normal);
     let tangent = normalize(input.tangent);
@@ -105,7 +105,7 @@ fn fragment(input: FragmentInput) -> FragmentOutput {
     let V = normalize(camera.position - surfacePosition);
     let R = normalize(reflect(-L, N));
 
-    let ambientIntensity = 0.99;
+    let ambientIntensity = 1.0;
     let ambientLight = light.color * ambientIntensity;
 
 
@@ -115,14 +115,20 @@ fn fragment(input: FragmentInput) -> FragmentOutput {
     let diffuseLight = lambert * attenuation * light.color;
     let specularLight = phong * attenuation * light.color;
 
-    let finalColor = (baseColor.rgb * (diffuseLight + ambientLight)  + specularLight)*shadowFactor;
+    let finalColor = baseColor.rgb * (ambientLight + (diffuseLight + specularLight) * shadowFactor);
 
     output.color = pow(vec4(finalColor, 1), vec4(1 / 2.2));
-    // output.color = vec4((transformedNormal * 0.5) + 0.5, 1.0);
+    //output.color = vec4((transformedNormal * 0.5) + 0.5, 1.0);
 
     //test if there are shadows
     //output.color = vec4(shadowFactor, shadowFactor, shadowFactor, 1.0);
 
+    // let depth = textureSample(shadowTexture, shadowSampler, shadowTexcoords.xy).r;
+    // output.color = vec4(depth, depth, depth, 1.0);
+    // output.color = vec4(shadowTexcoords.xy, 0.0, 1.0);
+    // let shadowTexcoordsClamped = clamp(shadowTexcoords, vec2(0.0), vec2(1.0));
+    // output.color = vec4(shadowTexcoordsClamped.xy, 0.0, 1.0);
+    // output.color = vec4(shadowPosition.z / shadowPosition.w); // Visualize depth
 
     return output;
 }

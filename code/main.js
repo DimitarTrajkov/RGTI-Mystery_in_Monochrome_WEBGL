@@ -26,6 +26,7 @@ const scene = loader.loadScene(loader.defaultScene);
 const camera = loader.loadNode("Camera");
 camera.addComponent(new FirstPersonController(camera, canvas));
 
+// console.log(camera)
 camera.isDynamic = true;
 let colorIndex = 0;
 camera.aabb = {
@@ -35,7 +36,7 @@ camera.aabb = {
 
 // Define color array for light and initialize color index
 const colorArray = [
-  [255, 255, 255],
+  [50, 50, 50],
   [100, 100, 255],
   [0, 255, 0],
   [0, 255, 255],
@@ -54,6 +55,11 @@ const lightComponent = new Light({
   intensity: 0,
 });
 light.addComponent(lightComponent);
+light.addComponent(new Camera({
+  near: 5,
+  far: 20,
+  fovy: 0.3,
+}));
 light.draw = true; // Add `draw` property to control rendering
 
 scene.addChild(light);
@@ -296,6 +302,8 @@ scene.traverse((node) => {
 });
 console.log(scene);
 function update(time, dt) {
+  console.log("Player Position:", camera.getComponentOfType(Transform)?.translation);
+
   scene.traverse((node) => {
     for (const component of node.components) {
       component.update?.(time, dt);
