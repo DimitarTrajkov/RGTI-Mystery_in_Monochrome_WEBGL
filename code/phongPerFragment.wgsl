@@ -87,7 +87,7 @@ fn fragment(input: FragmentInput) -> FragmentOutput {
 
     let shadowPosition = input.shadowPosition.xyz / input.shadowPosition.w;
     let shadowTexcoords = shadowPosition.xy * vec2(0.5, -0.5) + 0.5;
-    let shadowFactor = textureSampleCompare(shadowTexture, shadowSampler, shadowTexcoords.xy, shadowPosition.z + 0.005);
+    let shadowFactor = textureSampleCompare(shadowTexture, shadowSampler, shadowTexcoords.xy, shadowPosition.z - 0.002);
 
     let normal = normalize(input.normal);
     let tangent = normalize(input.tangent);
